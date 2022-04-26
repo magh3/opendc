@@ -31,4 +31,7 @@ dependencies {
     api(projects.opendcSimulator.opendcSimulatorCompute)
 
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)
+
+    implementation(libs.commons.math3)
+
 }
