@@ -66,5 +66,4 @@ include(":opendc-harness:opendc-harness-cli")
 include(":opendc-harness:opendc-harness-junit5")
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
-include("untitled")
-include("opendc-microservice")
+include(":opendc-microservice:microservice-simulator")
