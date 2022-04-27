@@ -2,15 +2,14 @@ package org.opendc.microservice.simulator
 
 import org.apache.commons.math3.distribution.PoissonDistribution
 
-// import org.apache.commons.math3.distribution.PoissonDstribution
 
-// import org.apache.commons.math3.distribution.PoissonDistribution
+public class PoissonArrival(rate: Double) {
 
-public class PoissonArrival {
+    private val dist: PoissonDistribution = PoissonDistribution(rate)
 
-    public fun getPoissonDist(){
+    public fun getSample(): Int {
 
-        val p = PoissonDistribution(5.0)
+        return this.dist.sample()
 
     }
 
