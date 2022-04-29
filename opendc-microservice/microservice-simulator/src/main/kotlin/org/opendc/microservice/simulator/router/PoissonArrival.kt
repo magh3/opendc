@@ -1,4 +1,4 @@
-package org.opendc.microservice.simulator
+package org.opendc.microservice.simulator.router
 
 import org.apache.commons.math3.distribution.PoissonDistribution
 
