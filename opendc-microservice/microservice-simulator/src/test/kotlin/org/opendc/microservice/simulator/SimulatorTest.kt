@@ -2,6 +2,7 @@ package org.opendc.microservice.simulator
 
 import org.junit.jupiter.api.Test
 import org.opendc.microservice.simulator.router.ConstForwardPolicy
+import org.opendc.microservice.simulator.router.ForwardPolicy
 import org.opendc.microservice.simulator.router.PoissonArrival
 
 
@@ -10,7 +11,7 @@ internal class SimulatorTest {
     @Test
     fun startTest(){
 
-        val forwardRoutePolicy = ConstForwardPolicy(3)
+        val forwardRoutePolicy: ForwardPolicy = ConstForwardPolicy(3)
 
         val poissonDist = PoissonArrival(5.0)
 

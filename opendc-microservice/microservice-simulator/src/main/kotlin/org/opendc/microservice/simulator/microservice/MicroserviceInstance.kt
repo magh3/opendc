@@ -1,4 +1,12 @@
 package org.opendc.microservice.simulator.microservice
 
-class MicroserviceInstance {
+
+public class MicroserviceInstance(private val ipLocation: String){
+
+    public fun getIpLocation(): String{
+
+        return ipLocation
+
+    }
+
 }
