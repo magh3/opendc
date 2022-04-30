@@ -2,7 +2,7 @@ package org.opendc.microservice.simulator.microservice
 
 import kotlin.random.Random
 
-class MicroserviceGenerator {
+class MicroserviceInstanceGenerator {
 
     public fun generateInstances(nrOfInstances: Int): Array<MicroserviceInstance>{
 
@@ -17,7 +17,7 @@ class MicroserviceGenerator {
         return instances
 
     }
-    
+
 
     /**
      * Generates random ip

@@ -2,7 +2,9 @@ package org.opendc.microservice.simulator.microservice
 
 class Microservice(private val id: String, private var nrOfInstances: Int){
 
-    private var instances: MicroserviceInstance = MicroserviceInstance("1.2.2.3")
+    private val microserviceGenerator = MicroserviceInstanceGenerator()
+
+    private var instances: Array<MicroserviceInstance> = microserviceGenerator.generateInstances(nrOfInstances)
 
     public fun getId(): String{
 
@@ -10,11 +12,11 @@ class Microservice(private val id: String, private var nrOfInstances: Int){
 
     }
 
-    public fun getInstances():MicroserviceInstance{
+    public fun getInstances(): Array<MicroserviceInstance> {
 
+        return instances
 
     }
-
 
 
 }
