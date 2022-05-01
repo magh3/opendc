@@ -4,7 +4,7 @@ import org.opendc.microservice.simulator.common.HelperFunctions
 
 public class MicroserviceGenerator {
 
-    public fun generateMicroservices(ids: Array<String>, nrOfInstances: Array<Int>): Array<Microservice>{
+    public fun generate(ids: Array<String>, nrOfInstances: Array<Int>): Array<Microservice>{
 
         // check if empty
 

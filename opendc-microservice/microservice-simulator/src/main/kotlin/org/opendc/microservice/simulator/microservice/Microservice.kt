@@ -4,7 +4,7 @@ class Microservice(private val id: String, private var nrOfInstances: Int){
 
     private val microserviceGenerator = MicroserviceInstanceGenerator()
 
-    private var instances: Array<MicroserviceInstance> = microserviceGenerator.generateInstances(nrOfInstances)
+    private var instances: Array<MicroserviceInstance> = microserviceGenerator.generate(nrOfInstances)
 
     public fun getId(): String{
 

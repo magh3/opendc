@@ -4,7 +4,7 @@ import kotlin.random.Random
 
 class MicroserviceInstanceGenerator {
 
-    public fun generateInstances(nrOfInstances: Int): Array<MicroserviceInstance>{
+    public fun generate(nrOfInstances: Int): Array<MicroserviceInstance>{
 
         var instances: Array<MicroserviceInstance> = arrayOf()
 
