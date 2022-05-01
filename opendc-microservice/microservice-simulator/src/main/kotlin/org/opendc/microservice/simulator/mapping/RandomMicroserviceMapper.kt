@@ -3,9 +3,9 @@ package org.opendc.microservice.simulator.mapping
 import org.opendc.microservice.simulator.microservice.Microservice
 import kotlin.random.Random
 
-class RandomMicroserviceMapper(private val microservices: Array<Microservice>):MicroserviceMapPolicy {
+public class RandomMicroserviceMapper():MicroserviceMapPolicy {
 
-    override fun mapsTo(): Microservice {
+    override fun mapsTo(microservices: Array<Microservice>): Microservice {
 
         val nrOfMicroservices: Int = microservices.size
 

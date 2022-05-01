@@ -32,7 +32,7 @@ public class MicroserviceGenerator {
 
         var microservices: Array<Microservice> = arrayOf()
 
-        for(i in 1..ids.size){
+        for(i in ids.indices){
 
             microservices += Microservice(ids[i], nrOfInstances[i])
 

@@ -5,7 +5,7 @@ import org.opendc.microservice.simulator.router.ForwardPolicy
 import org.opendc.microservice.simulator.router.RequestRouter
 
 
-class Client(private val id: Int){
+public class Client(private val id: Int){
 
     public fun sendRequest(forwardPolicy: ForwardPolicy,
                            mapPolicy: MicroserviceMapPolicy){

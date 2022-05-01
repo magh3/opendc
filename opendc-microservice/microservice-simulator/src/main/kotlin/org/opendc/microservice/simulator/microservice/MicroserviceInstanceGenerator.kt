@@ -2,7 +2,7 @@ package org.opendc.microservice.simulator.microservice
 
 import kotlin.random.Random
 
-class MicroserviceInstanceGenerator {
+public class MicroserviceInstanceGenerator {
 
     public fun generate(nrOfInstances: Int): Array<MicroserviceInstance>{
 

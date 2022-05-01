@@ -1,10 +1,10 @@
 package org.opendc.microservice.simulator.microservice
 
-class Microservice(private val id: String, private var nrOfInstances: Int){
+public class Microservice(private val id: String, private var nrOfInstances: Int){
 
-    private val microserviceGenerator = MicroserviceInstanceGenerator()
+    private val instanceGenerator = MicroserviceInstanceGenerator()
 
-    private var instances: Array<MicroserviceInstance> = microserviceGenerator.generate(nrOfInstances)
+    private var instances: Array<MicroserviceInstance> = instanceGenerator.generate(nrOfInstances)
 
     public fun getId(): String{
 
