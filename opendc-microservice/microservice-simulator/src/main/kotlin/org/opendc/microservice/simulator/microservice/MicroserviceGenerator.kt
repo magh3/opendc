@@ -1,44 +1,38 @@
 package org.opendc.microservice.simulator.microservice
 
+import kotlinx.coroutines.CoroutineScope
 import org.opendc.microservice.simulator.common.HelperFunctions
+import org.opendc.simulator.compute.model.MachineModel
+import java.time.Clock
 
-public class MicroserviceGenerator {
+public class MicroserviceGenerator(private val clock: Clock,
+                                   private val scope: CoroutineScope,
+                                   private val model: MachineModel
+){
 
-    public fun generate(ids: Array<String>, nrOfInstances: Array<Int>): Array<Microservice>{
+    public fun generate(configs: MutableList<MicroserviceConfiguration>): MutableList<Microservice> {
 
-        // check if empty
+        val result: MutableList<Microservice> = mutableListOf()
 
-        if(ids.isEmpty()){
+        if(HelperFunctions().hasDuplicates(configs)){
 
-            println("No Microservice Ids provided")
+            print("UUID must be unique. Duplicate configurations present")
 
-            return arrayOf()
-
-        }
-
-        // check duplicates
-
-        val helperFunctions = HelperFunctions()
-
-        if(helperFunctions.hasDuplicates(ids)){
-
-            println("Microservice Ids must be unique")
-
-            return arrayOf()
+            return mutableListOf()
 
         }
 
-        // no duplicates and non empty
+        var config: MicroserviceConfiguration
 
-        var microservices: Array<Microservice> = arrayOf()
+        for(i in 1..configs.size){
 
-        for(i in ids.indices){
+            config = configs[i]
 
-            microservices += Microservice(ids[i], nrOfInstances[i])
+            result.add(Microservice(config.getId(), config.getInstances(), clock, scope, model))
 
         }
 
-        return microservices
+        return result
 
     }
 

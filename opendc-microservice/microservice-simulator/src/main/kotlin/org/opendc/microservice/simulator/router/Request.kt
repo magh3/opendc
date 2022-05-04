@@ -1,11 +1,11 @@
 package org.opendc.microservice.simulator.router
 
-public class Request(){
+import java.time.Clock
 
-    private val arrivalTime: String = ""
+public class Request(clock: Clock){
 
-    private val forwardNr: String = ""
+    private val arrivalTime = clock.instant()
 
-    private val forwardedTo: Array<String> = arrayOf()
+    private val forwardNr: Int = 0
 
 }

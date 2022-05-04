@@ -1,8 +1,15 @@
 package org.opendc.microservice.simulator.microservice
 
+import kotlinx.coroutines.CoroutineScope
+import org.opendc.simulator.compute.model.MachineModel
+import java.time.Clock
+import java.util.*
 import kotlin.random.Random
 
-public class MicroserviceInstanceGenerator {
+public class MicroserviceInstanceGenerator(private val clock: Clock,
+                                           private val scope: CoroutineScope,
+                                           private val model: MachineModel
+){
 
     public fun generate(nrOfInstances: Int): Array<MicroserviceInstance>{
 
@@ -10,31 +17,11 @@ public class MicroserviceInstanceGenerator {
 
         for(i in 1..nrOfInstances){
 
-            instances += MicroserviceInstance(ipGenerator())
+            instances += MicroserviceInstance(UUID.randomUUID(), clock, scope, model)
 
         }
 
         return instances
-
-    }
-
-
-    /**
-     * Generates random ip
-     */
-    private fun ipGenerator(): String{
-
-        val rand = Random
-
-        var ip: String = ""
-
-        for(i in 1..4){
-
-            if(i > 1) ip = ip+'.'+rand.nextInt(10, 100)
-
-        }
-
-        return ip
 
     }
 

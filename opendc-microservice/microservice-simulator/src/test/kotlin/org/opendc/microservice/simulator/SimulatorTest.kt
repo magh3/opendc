@@ -2,7 +2,7 @@ package org.opendc.microservice.simulator
 
 import org.junit.jupiter.api.Test
 import org.opendc.microservice.simulator.mapping.RandomMicroserviceMapper
-import org.opendc.microservice.simulator.microservice.MicroservicesConfiguration
+import org.opendc.microservice.simulator.microservice.MicroserviceConfiguration
 import org.opendc.microservice.simulator.router.ConstForwardPolicy
 import org.opendc.microservice.simulator.router.ForwardPolicy
 import org.opendc.microservice.simulator.router.PoissonArrival
@@ -14,12 +14,12 @@ internal class SimulatorTest {
     @Test
     fun Test2(){
 
-        val microservicesConfig = MicroservicesConfiguration(arrayOf("M1"), arrayOf(1))
+        val microservicesConfig = MicroserviceConfiguration(arrayOf("M1"), arrayOf(1))
 
         val simulatorInitializer = SimulatorInitializer(microservicesConfig, 5.0, ConstForwardPolicy(3)
         , RandomMicroserviceMapper())
 
-        simulatorInitializer.runSimulator(1)
+        simulatorInitializer.runSimulator(2)
 
         assert(true)
 
