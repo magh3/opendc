@@ -34,4 +34,8 @@ dependencies {
 
     implementation(libs.commons.math3)
 
+    implementation(libs.opentelemetry.semconv)
+
+    testRuntimeOnly(libs.slf4j.simple)
+
 }

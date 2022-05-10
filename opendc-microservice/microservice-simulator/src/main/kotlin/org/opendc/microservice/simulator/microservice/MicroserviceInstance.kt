@@ -17,7 +17,7 @@ public class MicroserviceInstance(private val id: UUID,
                                   private val scope: CoroutineScope,
                                   private val model: MachineModel){
 
-    public fun getIpLocation(): UUID {
+    public fun getId(): UUID {
 
         return id
 

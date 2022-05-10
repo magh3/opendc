@@ -9,8 +9,8 @@ public class MicroserviceConfiguration(private val id: UUID,
                                        private val sendIntReqProb: Double
 ){
 
-    fun getId() = id
+    public fun getId(): UUID = id
 
-    fun getInstances() = nrOfInstances
+    public fun getInstances(): Int = nrOfInstances
 
 }

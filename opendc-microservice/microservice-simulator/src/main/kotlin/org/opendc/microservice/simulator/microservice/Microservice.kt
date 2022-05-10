@@ -1,5 +1,7 @@
 package org.opendc.microservice.simulator.microservice
 
+import io.opentelemetry.api.metrics.LongCounter
+import io.opentelemetry.api.metrics.Meter
 import kotlinx.coroutines.CoroutineScope
 import org.opendc.simulator.compute.model.MachineModel
 import java.time.Clock
@@ -10,6 +12,7 @@ public class Microservice(private val id: UUID,
                           private val clock: Clock,
                           private val scope: CoroutineScope,
                           private val model: MachineModel,
+                          meter: Meter,
                           private val getExtRetProb: Double = 100.0,
                           private val getIntReqProb: Double = 100.0,
                           private val sendIntReqProb: Double = 100.0
@@ -31,19 +34,18 @@ public class Microservice(private val id: UUID,
 
     }
 
+    /**
+     * The total amount of function invocations received by the function.
+     */
+    public val invocations: LongCounter = meter.counterBuilder("function.invocations.total")
+        .setDescription("Number of function invocations")
+        .setUnit("1")
+        .build()
+
 
     override fun equals(other: Any?): Boolean = other is Microservice && id == other.id
 
-    override fun hashCode(): Int {
-        var result = id.hashCode()
-        result = 31 * result + nrOfInstances
-        result = 31 * result + getExtRetProb.hashCode()
-        result = 31 * result + getIntReqProb.hashCode()
-        result = 31 * result + sendIntReqProb.hashCode()
-        result = 31 * result + instanceGenerator.hashCode()
-        result = 31 * result + instances.contentHashCode()
-        return result
-    }
+    override fun hashCode(): Int = id.hashCode()
 
 
 }

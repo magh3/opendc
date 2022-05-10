@@ -1,5 +1,6 @@
 package org.opendc.microservice.simulator.state
 
+import io.opentelemetry.api.metrics.Meter
 import kotlinx.coroutines.CoroutineScope
 import org.opendc.microservice.simulator.mapping.MicroserviceMapPolicy
 import org.opendc.microservice.simulator.microservice.Microservice
@@ -18,14 +19,15 @@ public class SimulatorInitializer
      private val microserviceMapper: MicroserviceMapPolicy,
      private val clock: Clock,
      private val scope: CoroutineScope,
-     private val model: MachineModel
+     private val model: MachineModel,
+     private val meter: Meter
      ) {
 
     private val microservices = initializeMicroservices()
 
     private fun initializeMicroservices(): MutableList<Microservice> {
 
-        return MicroserviceGenerator(clock, scope, model).generate(mutableListOf<MicroserviceConfiguration>())
+        return MicroserviceGenerator(clock, scope, model, meter).generate(mutableListOf<MicroserviceConfiguration>())
 
     }
 

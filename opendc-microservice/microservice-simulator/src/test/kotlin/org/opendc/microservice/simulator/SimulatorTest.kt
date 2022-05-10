@@ -1,29 +1,65 @@
 package org.opendc.microservice.simulator
 
+import io.opentelemetry.api.metrics.MeterProvider
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.opendc.microservice.simulator.mapping.RandomMicroserviceMapper
+import org.opendc.microservice.simulator.microservice.Microservice
 import org.opendc.microservice.simulator.microservice.MicroserviceConfiguration
+import org.opendc.microservice.simulator.microservice.MicroserviceInstance
 import org.opendc.microservice.simulator.router.ConstForwardPolicy
 import org.opendc.microservice.simulator.router.ForwardPolicy
 import org.opendc.microservice.simulator.router.PoissonArrival
 import org.opendc.microservice.simulator.state.SimulatorInitializer
+import org.opendc.simulator.compute.model.MachineModel
+import org.opendc.simulator.compute.model.MemoryUnit
+import org.opendc.simulator.compute.model.ProcessingNode
+import org.opendc.simulator.compute.model.ProcessingUnit
+import org.opendc.simulator.core.runBlockingSimulation
+import java.util.*
 
 
 internal class SimulatorTest {
 
+    private lateinit var machineModel: MachineModel
+
+    @BeforeEach
+    fun setUp() {
+        val cpuNode = ProcessingNode("Intel", "Xeon", "amd64", 2)
+
+        machineModel = MachineModel(
+            cpus = List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 1000.0) },
+            memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
+        )
+    }
+
+
     @Test
-    fun Test2(){
+    fun msInstanceConstructTest()= runBlockingSimulation {
 
-        val microservicesConfig = MicroserviceConfiguration(arrayOf("M1"), arrayOf(1))
+        val instance = MicroserviceInstance(UUID.randomUUID(), clock, this, machineModel)
 
-        val simulatorInitializer = SimulatorInitializer(microservicesConfig, 5.0, ConstForwardPolicy(3)
-        , RandomMicroserviceMapper())
+                
 
-        simulatorInitializer.runSimulator(2)
+    }
+
+
+
+    @Test
+    fun microserviceConstructTest() = runBlockingSimulation {
+
+        val microservice = Microservice(UUID.randomUUID(), 1, clock, this,
+            machineModel, MeterProvider.noop().get("Test 1"))
+
+        microservice.invocations.add(1)
+
+        println(microservice.getId())
 
         assert(true)
 
     }
+
+
 
     @Test
     fun startTest(){
