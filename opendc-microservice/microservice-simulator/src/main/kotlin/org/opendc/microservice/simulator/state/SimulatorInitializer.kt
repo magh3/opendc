@@ -5,7 +5,6 @@ import kotlinx.coroutines.CoroutineScope
 import org.opendc.microservice.simulator.mapping.MicroserviceMapPolicy
 import org.opendc.microservice.simulator.microservice.Microservice
 import org.opendc.microservice.simulator.microservice.MicroserviceConfiguration
-import org.opendc.microservice.simulator.microservice.MicroserviceGenerator
 import org.opendc.microservice.simulator.router.ForwardPolicy
 import org.opendc.microservice.simulator.router.PoissonArrival
 import org.opendc.simulator.compute.model.MachineModel
@@ -27,7 +26,7 @@ public class SimulatorInitializer
 
     private fun initializeMicroservices(): MutableList<Microservice> {
 
-        return MicroserviceGenerator(clock, scope, model, meter).generate(mutableListOf<MicroserviceConfiguration>())
+        return mutableListOf()
 
     }
 

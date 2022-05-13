@@ -28,14 +28,19 @@ plugins {
 }
 
 dependencies {
-    api(projects.opendcSimulator.opendcSimulatorCompute)
 
-    testImplementation(projects.opendcSimulator.opendcSimulatorCore)
+    api(projects.opendcSimulator.opendcSimulatorCompute)
+    api(projects.opendcCompute.opendcComputeWorkload)
+
+
+    implementation(projects.opendcTelemetry.opendcTelemetrySdk)
+    implementation(projects.opendcTelemetry.opendcTelemetryCompute)
 
     implementation(libs.commons.math3)
-
     implementation(libs.opentelemetry.semconv)
+    implementation(libs.kotlin.logging)
 
+    testImplementation(projects.opendcSimulator.opendcSimulatorCore)
     testRuntimeOnly(libs.slf4j.simple)
 
 }
