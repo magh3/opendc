@@ -10,13 +10,15 @@ public class MSInstanceDeployer {
 
     private val logger = KotlinLogging.logger {}
 
-    public fun deploy(msId: UUID, uid: UUID, clock: Clock, scope: CoroutineScope, model: MachineModel ){
+    public fun deploy(msId: UUID, uid: UUID, clock: Clock, scope: CoroutineScope, model: MachineModel ): MicroserviceInstance {
 
         val msInstance = MicroserviceInstance(uid, clock, scope, model)
 
         msInstance.run()
 
         logger.info { "Deployed instance with id $uid of microservice $msId" }
+
+        return msInstance
 
     }
 

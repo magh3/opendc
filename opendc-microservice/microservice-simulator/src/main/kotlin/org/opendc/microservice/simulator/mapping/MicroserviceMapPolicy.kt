@@ -5,7 +5,7 @@ import org.opendc.microservice.simulator.microservice.Microservice
 public interface MicroserviceMapPolicy {
 
     /*
-    * returns id of microservice to map to
+    * returns microservice to map to
     * */
     public fun mapsTo(microservices: Array<Microservice>):Microservice
 
