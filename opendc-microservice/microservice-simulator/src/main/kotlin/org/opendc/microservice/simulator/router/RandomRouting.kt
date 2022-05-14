@@ -6,7 +6,7 @@ import kotlin.random.Random
 /**
  * check nr should not be greater than ms present
  */
-class RandomRouting(private var nrOfMS: Int = 1): RoutingPolicy {
+public class RandomRouting(private var nrOfMS: Int = 1): RoutingPolicy {
 
     override fun call(microservices: Array<Microservice>): List<Microservice> {
 

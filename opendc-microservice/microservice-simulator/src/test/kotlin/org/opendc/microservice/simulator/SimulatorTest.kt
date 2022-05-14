@@ -1,15 +1,11 @@
 package org.opendc.microservice.simulator
 
-import io.opentelemetry.api.metrics.MeterProvider
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.opendc.microservice.simulator.mapping.RandomMicroserviceMapper
 import org.opendc.microservice.simulator.microservice.Microservice
-import org.opendc.microservice.simulator.microservice.MicroserviceInstance
 import org.opendc.microservice.simulator.router.ConstForwardPolicy
 import org.opendc.microservice.simulator.router.ForwardPolicy
 import org.opendc.microservice.simulator.router.PoissonArrival
-import org.opendc.microservice.simulator.state.SimulatorInitializer
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode

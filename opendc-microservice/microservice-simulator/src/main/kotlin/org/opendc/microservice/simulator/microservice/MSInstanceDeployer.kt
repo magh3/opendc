@@ -2,6 +2,7 @@ package org.opendc.microservice.simulator.microservice
 
 import kotlinx.coroutines.CoroutineScope
 import mu.KotlinLogging
+import org.opendc.microservice.simulator.state.RegistryManager
 import org.opendc.simulator.compute.model.MachineModel
 import java.time.Clock
 import java.util.*
@@ -10,9 +11,10 @@ public class MSInstanceDeployer {
 
     private val logger = KotlinLogging.logger {}
 
-    public fun deploy(msId: UUID, uid: UUID, clock: Clock, scope: CoroutineScope, model: MachineModel ): MicroserviceInstance {
+    public fun deploy(msId: UUID, uid: UUID, clock: Clock, scope: CoroutineScope,
+                      model: MachineModel, registryManager: RegistryManager ): MicroserviceInstance {
 
-        val msInstance = MicroserviceInstance(uid, clock, scope, model)
+        val msInstance = MicroserviceInstance(uid, clock, scope, model, registryManager)
 
         msInstance.run()
 

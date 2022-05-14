@@ -13,7 +13,7 @@ import org.opendc.simulator.compute.model.MachineModel
 import java.time.Clock
 
 
-public class SimulatorInitializer
+public class SimulatorState
     (private val msConfigs: List<MSConfiguration>,
      private val routingPolicy: RoutingPolicy,
      private val clock: Clock,
@@ -29,9 +29,13 @@ public class SimulatorInitializer
     /**
      * service discovery
      */
-    private val registry = mutableListOf<MicroserviceInstance>()
+    private val registryManager = RegistryManager()
 
-    
+
+    /**
+     * make ms.
+     * make ms instances.
+     */
     private fun initializeMS(): MutableList<Microservice> {
 
         val msList = mutableListOf<Microservice>()
@@ -46,7 +50,7 @@ public class SimulatorInitializer
 
             for(instanceId in config.getInstanceIds()){
 
-                registry.add(deployer.deploy(ms.getId(), instanceId, clock, scope, model))
+                deployer.deploy(ms.getId(), instanceId, clock, scope, model, registryManager)
 
             }
 
@@ -55,6 +59,7 @@ public class SimulatorInitializer
         return msList
 
     }
+
 
     /*
 

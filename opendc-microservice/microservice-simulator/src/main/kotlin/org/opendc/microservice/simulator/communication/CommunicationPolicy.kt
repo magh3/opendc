@@ -1,6 +1,6 @@
 package org.opendc.microservice.simulator.communication
 
-interface CommunicationPolicy {
+public interface CommunicationPolicy {
 
     /**
      * Not using right now

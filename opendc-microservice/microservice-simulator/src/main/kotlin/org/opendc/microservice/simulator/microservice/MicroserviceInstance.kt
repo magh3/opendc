@@ -3,6 +3,7 @@ package org.opendc.microservice.simulator.microservice
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import org.opendc.microservice.simulator.state.RegistryManager
 import org.opendc.simulator.compute.SimBareMetalMachine
 import org.opendc.simulator.compute.SimMachine
 import org.opendc.simulator.compute.SimMachineContext
@@ -21,7 +22,15 @@ import java.util.*
 public class MicroserviceInstance(private val id: UUID,
                                   private val clock: Clock,
                                   private val scope: CoroutineScope,
-                                  private val model: MachineModel){
+                                  private val model: MachineModel,
+                                  private val registryManager: RegistryManager
+                                  ){
+
+    init{
+
+        registryManager.registerInstance(this)
+
+    }
 
     public fun getId(): UUID {
 
@@ -74,9 +83,11 @@ public class MicroserviceInstance(private val id: UUID,
 
 
     /**
-     * stop instance
+     * stop instance, close / remove.
      */
-    public fun stop(){
+    public fun close(){
+
+        registryManager.deregisterInstance(this)
 
     }
 
