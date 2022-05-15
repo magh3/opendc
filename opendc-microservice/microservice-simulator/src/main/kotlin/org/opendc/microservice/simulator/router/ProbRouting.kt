@@ -19,7 +19,7 @@ public class ProbRouting(callProb: List<Double>): RoutingPolicy {
 
     }
 
-    override fun call(microservices: Array<Microservice>): List<Microservice> {
+    override fun call(microservices: MutableList<Microservice>): List<Microservice> {
 
         require(microservices.isNotEmpty()){"No microservice found."}
 

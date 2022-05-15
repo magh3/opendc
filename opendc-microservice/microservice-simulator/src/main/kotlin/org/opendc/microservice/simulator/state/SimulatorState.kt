@@ -2,12 +2,11 @@ package org.opendc.microservice.simulator.state
 
 import io.opentelemetry.api.metrics.Meter
 import kotlinx.coroutines.CoroutineScope
-import org.opendc.microservice.simulator.mapping.MicroserviceMapPolicy
 import org.opendc.microservice.simulator.microservice.Microservice
 import org.opendc.microservice.simulator.microservice.MSConfiguration
 import org.opendc.microservice.simulator.microservice.MSInstanceDeployer
-import org.opendc.microservice.simulator.microservice.MicroserviceInstance
-import org.opendc.microservice.simulator.router.ForwardPolicy
+import org.opendc.microservice.simulator.router.PoissonArrival
+import org.opendc.microservice.simulator.router.RequestPolicy
 import org.opendc.microservice.simulator.router.RoutingPolicy
 import org.opendc.simulator.compute.model.MachineModel
 import java.time.Clock
@@ -15,14 +14,14 @@ import java.time.Clock
 
 public class SimulatorState
     (private val msConfigs: List<MSConfiguration>,
+     private val requestPolicy: RequestPolicy,
      private val routingPolicy: RoutingPolicy,
+     private val loadBalancer: LoadBalancer,
      private val clock: Clock,
      private val scope: CoroutineScope,
      private val model: MachineModel,
      private val meter: Meter
      ) {
-
-    private val microservices = initializeMS()
 
     private val deployer =  MSInstanceDeployer()
 
@@ -30,6 +29,8 @@ public class SimulatorState
      * service discovery
      */
     private val registryManager = RegistryManager()
+
+    private val microservices = initializeMS()
 
 
     /**
@@ -44,9 +45,13 @@ public class SimulatorState
 
         for(config in msConfigs){
 
+            // make ms
+
             ms = Microservice((config.getId()))
 
             msList.add(ms)
+
+            // deploy instances
 
             for(instanceId in config.getInstanceIds()){
 
@@ -57,6 +62,42 @@ public class SimulatorState
         }
 
         return msList
+
+    }
+
+
+    /**
+     * run simulator for t Time unit.
+     */
+    public fun run(t: Int){
+
+        var nrOfRequests = 0
+
+        val poissonArrival = PoissonArrival(5.0)
+
+        var callMS: List<Microservice>
+
+        // how to do this . Not a loop. How know one sec passed.
+
+        // time loop
+
+        for(s in 1..t){
+
+            nrOfRequests = poissonArrival.nrOfRequests()
+
+            println("Requests = $nrOfRequests at time $s")
+
+            callMS = routingPolicy.call(microservices, nrOfRequests)
+
+            // invoke loop
+
+            for(ms in callMS){
+
+                loadBalancer.instance(ms, registryManager.getInstances()).invoke()
+
+            }
+
+        }
 
     }
 

@@ -5,8 +5,8 @@ import org.opendc.microservice.simulator.microservice.Microservice
 /**
  * Not using
  */
-public interface RoutingPolicy {
+public interface RoutingPolicy{
 
-    public fun call(microservices: Array<Microservice>): List<Microservice>
+    public fun call(microservices: MutableList<Microservice>, nrOfMS: Int = 1): List<Microservice>
 
 }

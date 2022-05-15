@@ -1,21 +1,29 @@
 package org.opendc.microservice.simulator.state
 
-import org.opendc.microservice.simulator.microservice.MicroserviceInstance
+import org.opendc.microservice.simulator.microservice.MSInstance
+import org.opendc.microservice.simulator.microservice.Microservice
 
-class RegistryManager {
+public class RegistryManager {
 
-    private val registry = mutableSetOf<MicroserviceInstance>()
+    private val registry = mutableSetOf<MSInstance>()
 
-    public fun registerInstance(msInstance: MicroserviceInstance){
+    public fun registerInstance(msInstance: MSInstance){
 
         registry.add(msInstance)
 
     }
 
 
-    public fun deregisterInstance(msInstance: MicroserviceInstance){
+    public fun deregisterInstance(msInstance: MSInstance){
 
         registry.remove(msInstance)
+
+    }
+
+
+    public fun getInstances(): MutableSet<MSInstance> {
+
+        return registry
 
     }
 

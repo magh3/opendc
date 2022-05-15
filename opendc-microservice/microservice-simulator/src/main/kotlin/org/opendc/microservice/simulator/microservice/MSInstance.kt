@@ -19,11 +19,12 @@ import java.util.*
 * Microservice instance has an id.
 * The clock, scope, model are used to config the machine to run the instance on.
  */
-public class MicroserviceInstance(private val id: UUID,
-                                  private val clock: Clock,
-                                  private val scope: CoroutineScope,
-                                  private val model: MachineModel,
-                                  private val registryManager: RegistryManager
+public class MSInstance(private val msId: UUID,
+                        private val id: UUID,
+                        private val clock: Clock,
+                        private val scope: CoroutineScope,
+                        private val model: MachineModel,
+                        private val registryManager: RegistryManager
                                   ){
 
     init{
@@ -33,6 +34,13 @@ public class MicroserviceInstance(private val id: UUID,
     }
 
     public fun getId(): UUID {
+
+        return id
+
+    }
+
+
+    public fun getMSId(): UUID {
 
         return id
 
@@ -59,6 +67,8 @@ public class MicroserviceInstance(private val id: UUID,
 
         job = scope.launch {
 
+            println("launching instance with UUID "+getId())
+
             machine.startWorkload(object : SimWorkload {
 
                 override fun onStart(ctx: SimMachineContext) {
@@ -75,9 +85,11 @@ public class MicroserviceInstance(private val id: UUID,
 
     /**
      * run request on instance.
-     * if not active, make it active
+     * if not active, make it active.
      */
     public fun invoke(){
+
+        println("MSInstance invoked with id "+ getId())
 
     }
 
@@ -92,7 +104,7 @@ public class MicroserviceInstance(private val id: UUID,
     }
 
 
-    override fun equals(other: Any?): Boolean = other is MicroserviceInstance && id == other.id
+    override fun equals(other: Any?): Boolean = other is MSInstance && id == other.id
 
     override fun hashCode(): Int = id.hashCode()
 

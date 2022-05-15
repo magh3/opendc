@@ -15,7 +15,11 @@ import java.util.*
 import org.opendc.compute.workload.telemetry.SdkTelemetryManager
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import org.opendc.compute.workload.topology.HostSpec
+import org.opendc.microservice.simulator.microservice.MSConfiguration
 import org.opendc.microservice.simulator.microservice.MSInstanceDeployer
+import org.opendc.microservice.simulator.router.RandomRouting
+import org.opendc.microservice.simulator.state.LoadBalancer
+import org.opendc.microservice.simulator.state.SimulatorState
 import org.opendc.simulator.compute.kernel.SimSpaceSharedHypervisorProvider
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
@@ -33,6 +37,23 @@ internal class SimulatorTest {
             cpus = List(cpuNode.coreCount) { ProcessingUnit(cpuNode, it, 1000.0) },
             memory = List(4) { MemoryUnit("Crucial", "MTA18ASF4G72AZ-3G2B1", 3200.0, 32_000) }
         )
+    }
+
+
+    @Test
+    fun runMiniSim() = runBlockingSimulation {
+
+        val meterProvider = SdkMeterProvider.builder()
+
+        val msConfig = mutableListOf<MSConfiguration>( MSConfiguration(UUID.randomUUID(),
+            listOf(UUID.randomUUID())), MSConfiguration(UUID.randomUUID(),
+            listOf(UUID.randomUUID())) )
+
+        val state = SimulatorState(msConfig, PoissonArrival(5.0),  RandomRouting(), LoadBalancer(),
+            clock, this, machineModel, meterProvider.build().get("org.ms.simulator"))
+
+        assert(true)
+
     }
 
 
@@ -96,7 +117,7 @@ internal class SimulatorTest {
 
         val poissonDist = PoissonArrival(5.0)
 
-        var arrivalRequestsNr = poissonDist.getSample()
+        var arrivalRequestsNr = poissonDist.nrOfRequests()
 
         if(arrivalRequestsNr == 0){
 
