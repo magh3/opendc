@@ -17,7 +17,7 @@ public class LoadBalancer {
 
         // this should not be reached, return random first instance
 
-        println("ERROR load balancer could not found instance")
+        println("ERROR load balancer could not found instance. Returning first random instance")
 
         return registry.elementAt(0)
 

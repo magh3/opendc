@@ -42,7 +42,7 @@ public class MSInstance(private val msId: UUID,
 
     public fun getMSId(): UUID {
 
-        return id
+        return msId
 
     }
 

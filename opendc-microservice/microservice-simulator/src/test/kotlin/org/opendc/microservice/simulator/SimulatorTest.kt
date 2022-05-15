@@ -52,6 +52,8 @@ internal class SimulatorTest {
         val state = SimulatorState(msConfig, PoissonArrival(5.0),  RandomRouting(), LoadBalancer(),
             clock, this, machineModel, meterProvider.build().get("org.ms.simulator"))
 
+        state.run(1)
+
         assert(true)
 
     }

@@ -27,7 +27,7 @@ public class RandomRouting(): RoutingPolicy {
 
         val nrOfMicroservices: Int = microservices.size
 
-        val randService = Random.nextInt(1, nrOfMicroservices+1)
+        val randService = Random.nextInt(0, nrOfMicroservices)
 
         return microservices[randService]
 

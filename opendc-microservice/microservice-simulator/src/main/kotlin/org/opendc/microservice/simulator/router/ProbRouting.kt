@@ -19,7 +19,7 @@ public class ProbRouting(callProb: List<Double>): RoutingPolicy {
 
     }
 
-    override fun call(microservices: MutableList<Microservice>): List<Microservice> {
+    override fun call(microservices: MutableList<Microservice>, nrOfMS: Int): List<Microservice> {
 
         require(microservices.isNotEmpty()){"No microservice found."}
 
@@ -34,7 +34,7 @@ public class ProbRouting(callProb: List<Double>): RoutingPolicy {
     }
 
 
-    private fun getProbMS(microservices: Array<Microservice>): Microservice {
+    private fun getProbMS(microservices: MutableList<Microservice>): Microservice {
 
         val randProb = Random.nextDouble(0.001, 1.0)
 
