@@ -1,5 +1,6 @@
 package org.opendc.microservice.simulator
 
+import io.mockk.spyk
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.opendc.microservice.simulator.microservice.Microservice
@@ -16,13 +17,18 @@ import org.opendc.compute.workload.telemetry.SdkTelemetryManager
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import org.opendc.compute.workload.topology.HostSpec
 import org.opendc.microservice.simulator.microservice.MSConfiguration
+import org.opendc.microservice.simulator.microservice.MSInstance
 import org.opendc.microservice.simulator.microservice.MSInstanceDeployer
 import org.opendc.microservice.simulator.router.RandomRouting
 import org.opendc.microservice.simulator.state.LoadBalancer
 import org.opendc.microservice.simulator.state.SimulatorState
+import org.opendc.microservice.simulator.workload.MSWorkload
+import org.opendc.microservice.simulator.workload.MSWorkloadMapper
 import org.opendc.simulator.compute.kernel.SimSpaceSharedHypervisorProvider
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
+import org.opendc.simulator.compute.workload.SimFlopsWorkload
+import org.opendc.simulator.compute.workload.SimWorkload
 
 
 internal class SimulatorTest {
@@ -49,8 +55,18 @@ internal class SimulatorTest {
             listOf(UUID.randomUUID())), MSConfiguration(UUID.randomUUID(),
             listOf(UUID.randomUUID())) )
 
+        val workload = spyk(object : MSWorkload, SimWorkload by SimFlopsWorkload(1000) {
+            override suspend fun invoke() {}
+        })
+
+        val mapper = object : MSWorkloadMapper {
+            override fun createWorkload(msInstance: MSInstance): MSWorkload {
+                return workload
+            }
+        }
+
         val state = SimulatorState(msConfig, PoissonArrival(5.0),  RandomRouting(), LoadBalancer(),
-            clock, this, machineModel, meterProvider.build().get("org.ms.simulator"))
+            clock, this, machineModel, meterProvider.build().get("org.ms.simulator"), mapper)
 
         state.run(1)
 

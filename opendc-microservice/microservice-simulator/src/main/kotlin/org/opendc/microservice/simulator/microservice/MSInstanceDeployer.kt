@@ -3,6 +3,7 @@ package org.opendc.microservice.simulator.microservice
 import kotlinx.coroutines.CoroutineScope
 import mu.KotlinLogging
 import org.opendc.microservice.simulator.state.RegistryManager
+import org.opendc.microservice.simulator.workload.MSWorkloadMapper
 import org.opendc.simulator.compute.model.MachineModel
 import java.time.Clock
 import java.util.*
@@ -12,9 +13,10 @@ public class MSInstanceDeployer {
     private val logger = KotlinLogging.logger {}
 
     public fun deploy(msId: UUID, uid: UUID, clock: Clock, scope: CoroutineScope,
-                      model: MachineModel, registryManager: RegistryManager ): MSInstance {
+                      model: MachineModel, registryManager: RegistryManager,
+                      mapper: MSWorkloadMapper ): MSInstance {
 
-        val msInstance = MSInstance(msId, uid, clock, scope, model, registryManager)
+        val msInstance = MSInstance(msId, uid, clock, scope, model, registryManager, mapper)
 
         msInstance.run()
 

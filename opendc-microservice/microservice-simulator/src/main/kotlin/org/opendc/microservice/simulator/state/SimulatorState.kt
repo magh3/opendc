@@ -8,6 +8,7 @@ import org.opendc.microservice.simulator.microservice.MSInstanceDeployer
 import org.opendc.microservice.simulator.router.PoissonArrival
 import org.opendc.microservice.simulator.router.RequestPolicy
 import org.opendc.microservice.simulator.router.RoutingPolicy
+import org.opendc.microservice.simulator.workload.MSWorkloadMapper
 import org.opendc.simulator.compute.model.MachineModel
 import java.time.Clock
 
@@ -20,7 +21,8 @@ public class SimulatorState
      private val clock: Clock,
      private val scope: CoroutineScope,
      private val model: MachineModel,
-     private val meter: Meter
+     private val meter: Meter,
+     private val mapper: MSWorkloadMapper
      ) {
 
     private val deployer =  MSInstanceDeployer()
@@ -55,7 +57,7 @@ public class SimulatorState
 
             for(instanceId in config.getInstanceIds()){
 
-                deployer.deploy(ms.getId(), instanceId, clock, scope, model, registryManager)
+                deployer.deploy(ms.getId(), instanceId, clock, scope, model, registryManager, mapper)
 
             }
 
@@ -69,7 +71,7 @@ public class SimulatorState
     /**
      * run simulator for t Time unit.
      */
-    public fun run(t: Int){
+    suspend public fun run(t: Int){
 
         var nrOfRequests = 0
 

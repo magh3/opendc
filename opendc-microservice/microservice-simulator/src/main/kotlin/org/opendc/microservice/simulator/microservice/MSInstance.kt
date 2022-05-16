@@ -4,6 +4,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.opendc.microservice.simulator.state.RegistryManager
+import org.opendc.microservice.simulator.workload.MSWorkloadMapper
 import org.opendc.simulator.compute.SimBareMetalMachine
 import org.opendc.simulator.compute.SimMachine
 import org.opendc.simulator.compute.SimMachineContext
@@ -24,8 +25,11 @@ public class MSInstance(private val msId: UUID,
                         private val clock: Clock,
                         private val scope: CoroutineScope,
                         private val model: MachineModel,
-                        private val registryManager: RegistryManager
+                        private val registryManager: RegistryManager,
+                        private val mapper: MSWorkloadMapper
                                   ){
+
+    private val workload = mapper.createWorkload(this)
 
     init{
 
@@ -69,14 +73,7 @@ public class MSInstance(private val msId: UUID,
 
             println("launching instance with UUID "+getId())
 
-            machine.startWorkload(object : SimWorkload {
-
-                override fun onStart(ctx: SimMachineContext) {
-                }
-
-                override fun onStop(ctx: SimMachineContext) {
-                }
-            })
+            machine.startWorkload(workload)
 
         }
 
@@ -87,9 +84,11 @@ public class MSInstance(private val msId: UUID,
      * run request on instance.
      * if not active, make it active.
      */
-    public fun invoke(){
+    suspend public fun invoke(){
 
         println("MSInstance invoked with id "+ getId())
+
+        workload.invoke()
 
     }
 
