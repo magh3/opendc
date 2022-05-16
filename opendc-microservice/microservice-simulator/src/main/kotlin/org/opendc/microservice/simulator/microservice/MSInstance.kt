@@ -71,7 +71,7 @@ public class MSInstance(private val msId: UUID,
 
         job = scope.launch {
 
-            println("launching instance with UUID "+getId())
+            println("launching instance with UUID "+getId()+" at coroutine ${Thread.currentThread().name} ")
 
             machine.startWorkload(workload)
 
@@ -86,7 +86,7 @@ public class MSInstance(private val msId: UUID,
      */
     suspend public fun invoke(){
 
-        println("MSInstance invoked with id "+ getId())
+        println("MSInstance invoked with id "+ getId()+" at coroutine ${Thread.currentThread().name} ")
 
         workload.invoke()
 
