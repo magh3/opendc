@@ -2,6 +2,7 @@ package org.opendc.microservice.simulator.state
 
 import io.opentelemetry.api.metrics.Meter
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import org.opendc.microservice.simulator.microservice.Microservice
 import org.opendc.microservice.simulator.microservice.MSConfiguration
 import org.opendc.microservice.simulator.microservice.MSInstanceDeployer

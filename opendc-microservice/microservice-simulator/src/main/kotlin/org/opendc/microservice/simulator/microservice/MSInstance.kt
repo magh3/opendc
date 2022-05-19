@@ -1,8 +1,7 @@
 package org.opendc.microservice.simulator.microservice
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import org.opendc.microservice.simulator.state.RegistryManager
 import org.opendc.microservice.simulator.workload.MSWorkloadMapper
 import org.opendc.simulator.compute.SimBareMetalMachine
@@ -15,6 +14,9 @@ import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.flow.FlowEngine
 import java.time.Clock
 import java.util.*
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 /**
 * Microservice instance has an id.
@@ -30,6 +32,13 @@ public class MSInstance(private val msId: UUID,
                                   ){
 
     private val workload = mapper.createWorkload(this)
+
+    private val queue = ArrayDeque<InvocationRequest>()
+
+    /**
+     * A channel used to signal that new invocations have been enqueued.
+     */
+    private val chan = Channel<Unit>(Channel.RENDEZVOUS)
 
     init{
 
@@ -71,9 +80,44 @@ public class MSInstance(private val msId: UUID,
 
         job = scope.launch {
 
-            println("launching instance with UUID "+getId()+" at coroutine ${Thread.currentThread().name} ")
+            launch{
 
-            machine.startWorkload(workload)
+                println(" ${clock.millis()} launching instance with UUID "+getId()+" at coroutine ${Thread.currentThread().name} ")
+
+                machine.startWorkload(workload)
+
+                println(" ${clock.millis()} Finished instance workload"+" at coroutine ${Thread.currentThread().name}" )
+
+
+            }
+
+            while (isActive) {
+                if (queue.isEmpty()) {
+                    chan.receive()
+                }
+
+                println(" ${clock.millis()} Invoke request received at coroutine ${Thread.currentThread().name}")
+
+                while (queue.isNotEmpty()) {
+
+                    println(" ${clock.millis()} Found in queue at coroutine ${Thread.currentThread().name}")
+
+                    val request = queue.poll()
+                    try {
+                        workload.invoke()
+                        request.cont.resume(Unit)
+                    } catch (cause: CancellationException) {
+                        request.cont.resumeWithException(cause)
+                        throw cause
+                    } catch (cause: Throwable) {
+                        request.cont.resumeWithException(cause)
+                    }
+                }
+
+                println(" ${clock.millis()} Invoke finished at coroutine ${Thread.currentThread().name}")
+
+            }
+
 
         }
 
@@ -86,9 +130,14 @@ public class MSInstance(private val msId: UUID,
      */
     suspend public fun invoke(){
 
-        println("MSInstance invoked with id "+ getId()+" at coroutine ${Thread.currentThread().name} ")
+        // println("MSInstance invoked with id "+ getId()+" at coroutine ${Thread.currentThread().name} ")
 
-        workload.invoke()
+        println(" ${clock.millis()} Queuing Invoke request")
+
+        return suspendCancellableCoroutine { cont ->
+            queue.add(InvocationRequest(cont))
+            chan.trySend(Unit)
+        }
 
     }
 
@@ -106,5 +155,11 @@ public class MSInstance(private val msId: UUID,
     override fun equals(other: Any?): Boolean = other is MSInstance && id == other.id
 
     override fun hashCode(): Int = id.hashCode()
+
+
+    /**
+     * A function invocation request.
+     */
+    private data class InvocationRequest(val cont: Continuation<Unit>)
 
 }

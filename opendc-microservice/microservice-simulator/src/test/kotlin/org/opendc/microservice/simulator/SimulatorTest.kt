@@ -15,6 +15,9 @@ import org.opendc.simulator.core.runBlockingSimulation
 import java.util.*
 import org.opendc.compute.workload.telemetry.SdkTelemetryManager
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import org.opendc.compute.workload.topology.HostSpec
 import org.opendc.microservice.simulator.microservice.MSConfiguration
 import org.opendc.microservice.simulator.microservice.MSInstance
@@ -56,7 +59,9 @@ internal class SimulatorTest {
             listOf(UUID.randomUUID())) )
 
         val workload = spyk(object : MSWorkload, SimWorkload by SimFlopsWorkload(1000) {
-            override suspend fun invoke() {}
+            override suspend fun invoke() {
+                delay(5000)
+            }
         })
 
         val mapper = object : MSWorkloadMapper {
