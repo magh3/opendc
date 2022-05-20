@@ -105,6 +105,7 @@ public class MSInstance(private val msId: UUID,
                     val request = queue.poll()
                     try {
                         workload.invoke()
+                        println(" ${clock.millis()} Finished invoke at coroutine ${Thread.currentThread().name}")
                         request.cont.resume(Unit)
                     } catch (cause: CancellationException) {
                         request.cont.resumeWithException(cause)
@@ -113,8 +114,6 @@ public class MSInstance(private val msId: UUID,
                         request.cont.resumeWithException(cause)
                     }
                 }
-
-                println(" ${clock.millis()} Invoke finished at coroutine ${Thread.currentThread().name}")
 
             }
 
@@ -132,7 +131,7 @@ public class MSInstance(private val msId: UUID,
 
         // println("MSInstance invoked with id "+ getId()+" at coroutine ${Thread.currentThread().name} ")
 
-        println(" ${clock.millis()} Queuing Invoke request")
+        println(" ${clock.millis()} Queuing Invoke request for ms"+ getId())
 
         return suspendCancellableCoroutine { cont ->
             queue.add(InvocationRequest(cont))
@@ -158,7 +157,7 @@ public class MSInstance(private val msId: UUID,
 
 
     /**
-     * A function invocation request.
+     * A ms invocation request.
      */
     private data class InvocationRequest(val cont: Continuation<Unit>)
 

@@ -2,7 +2,9 @@ package org.opendc.microservice.simulator.state
 
 import io.opentelemetry.api.metrics.Meter
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.opendc.microservice.simulator.microservice.Microservice
 import org.opendc.microservice.simulator.microservice.MSConfiguration
 import org.opendc.microservice.simulator.microservice.MSInstanceDeployer
@@ -84,23 +86,37 @@ public class SimulatorState
 
         // time loop
 
-        for(s in 1..t){
+        coroutineScope {
 
-            nrOfRequests = poissonArrival.nrOfRequests()
 
-            println("Requests = $nrOfRequests at time $s")
+            for (s in 1..t) {
 
-            callMS = routingPolicy.call(microservices, nrOfRequests)
+                nrOfRequests = poissonArrival.nrOfRequests()
 
-            // invoke loop
+                println("Requests = $nrOfRequests at time $s")
 
-            for(ms in callMS){
+                callMS = routingPolicy.call(microservices, nrOfRequests)
 
-                loadBalancer.instance(ms, registryManager.getInstances()).invoke()
+                // invoke loop
+
+                for (ms in callMS) {
+
+
+                    launch {
+
+                        loadBalancer.instance(ms, registryManager.getInstances()).invoke()
+
+                    }
+
+
+                }
+
+                delay(1000)
 
             }
 
         }
+
 
     }
 
