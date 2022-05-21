@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import kotlinx.coroutines.delay
 import org.opendc.compute.workload.topology.HostSpec
 import org.opendc.microservice.simulator.execution.LogNormalExe
+import org.opendc.microservice.simulator.execution.PoissonDelay
 import org.opendc.microservice.simulator.microservice.MSConfiguration
 import org.opendc.microservice.simulator.microservice.MSInstance
 import org.opendc.microservice.simulator.mapping.RandomRouting
@@ -71,8 +72,9 @@ internal class SimulatorTest {
             }
         }
 
-        val state = SimulatorState(msConfig, PoissonArrival(5.0),  RandomRouting(), LoadBalancer(),
-            clock, this, machineModel, meterProvider.get("ms-meter"), mapper)
+        val state = SimulatorState(msConfig, PoissonArrival(3.0),  RandomRouting(), LoadBalancer(),
+            LogNormalExe(6.0), clock, this, machineModel,
+            meterProvider.get("ms-meter"), mapper, 3000, PoissonDelay(500.0))
 
         state.run(3)
 
@@ -84,7 +86,7 @@ internal class SimulatorTest {
     @Test
     fun logNormalExeTest(){
 
-        println(LogNormalExe().time())
+        println(LogNormalExe(7.0).time())
 
         assert(true)
 

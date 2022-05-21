@@ -5,6 +5,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.opendc.microservice.simulator.execution.ExeDelay
+import org.opendc.microservice.simulator.execution.InterArrivalDelay
 import org.opendc.microservice.simulator.microservice.Microservice
 import org.opendc.microservice.simulator.microservice.MSConfiguration
 import org.opendc.microservice.simulator.microservice.MSInstanceDeployer
@@ -21,12 +23,15 @@ public class SimulatorState
      private val requestPolicy: RequestPolicy,
      private val routingPolicy: RoutingPolicy,
      private val loadBalancer: LoadBalancer,
+     private val exePolicy: ExeDelay,
      private val clock: Clock,
      private val scope: CoroutineScope,
      private val model: MachineModel,
      private val meter: Meter,
-     private val mapper: MSWorkloadMapper
-     ) {
+     private val mapper: MSWorkloadMapper,
+     private val lastReqTime: Int,
+     private val interArrivalDelay: InterArrivalDelay
+) {
 
     private val deployer =  MSInstanceDeployer()
 
@@ -91,20 +96,24 @@ public class SimulatorState
 
         var callMS: List<Microservice>
 
-        // how to do this . Not a loop. How know one sec passed.
+        var exeTime: Long
+
+        var nextReqDelay: Long
 
         // time loop
 
         coroutineScope {
 
 
-            for (s in 1..t) {
+            while (clock.millis() < lastReqTime) {
 
-                nrOfRequests = poissonArrival.nrOfRequests()
+                nrOfRequests = requestPolicy.nrOfRequests()
 
-                println("Requests = $nrOfRequests at time $s")
+                println("Requests = $nrOfRequests at time ${clock.millis()}")
 
                 callMS = routingPolicy.call(microservices, nrOfRequests)
+
+                nextReqDelay = interArrivalDelay.time()
 
                 // invoke loop
 
@@ -112,16 +121,18 @@ public class SimulatorState
 
                     _invocations.add(1)
 
+                    exeTime = exePolicy.time()
+
                     launch {
 
-                        loadBalancer.instance(ms, registryManager.getInstances()).invoke()
+                        loadBalancer.instance(ms, registryManager.getInstances()).invoke(exeTime)
 
                     }
 
 
                 }
 
-                delay(1000)
+                delay(nextReqDelay)
 
             }
 
