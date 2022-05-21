@@ -82,11 +82,11 @@ public class MSInstance(private val msId: UUID,
 
             launch{
 
-                println(" ${clock.millis()} launching instance with UUID "+getId()+" at coroutine ${Thread.currentThread().name} ")
+                // println(" ${clock.millis()} launching instance with UUID "+getId()+" at coroutine ${Thread.currentThread().name} ")
 
                 machine.startWorkload(workload)
 
-                println(" ${clock.millis()} Finished instance workload"+" at coroutine ${Thread.currentThread().name}" )
+                // println(" ${clock.millis()} Finished instance workload"+" at coroutine ${Thread.currentThread().name}" )
 
 
             }
@@ -96,16 +96,15 @@ public class MSInstance(private val msId: UUID,
                     chan.receive()
                 }
 
-                println(" ${clock.millis()} Invoke request received at coroutine ${Thread.currentThread().name}")
 
                 while (queue.isNotEmpty()) {
 
-                    println(" ${clock.millis()} Found in queue at coroutine ${Thread.currentThread().name}")
+                    println(" ${clock.millis()} Starting queued request at coroutine ${Thread.currentThread().name} on instance ${getId()}")
 
                     val request = queue.poll()
                     try {
                         workload.invoke()
-                        println(" ${clock.millis()} Finished invoke at coroutine ${Thread.currentThread().name}")
+                        println(" ${clock.millis()} Finished invoke at coroutine ${Thread.currentThread().name} on instance ${getId()}")
                         request.cont.resume(Unit)
                     } catch (cause: CancellationException) {
                         request.cont.resumeWithException(cause)
@@ -131,7 +130,7 @@ public class MSInstance(private val msId: UUID,
 
         // println("MSInstance invoked with id "+ getId()+" at coroutine ${Thread.currentThread().name} ")
 
-        println(" ${clock.millis()} Queuing Invoke request for ms"+ getId())
+        println(" ${clock.millis()} Queuing Invoke request for instance "+ getId())
 
         return suspendCancellableCoroutine { cont ->
             queue.add(InvocationRequest(cont))

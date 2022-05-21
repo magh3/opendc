@@ -1,6 +1,7 @@
 package org.opendc.microservice.simulator
 
 import io.mockk.spyk
+import io.opentelemetry.api.metrics.MeterProvider
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.opendc.microservice.simulator.microservice.Microservice
@@ -32,6 +33,8 @@ import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.compute.workload.SimFlopsWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
+import org.opendc.telemetry.sdk.toOtelClock
+import java.rmi.server.UID
 
 
 internal class SimulatorTest {
@@ -52,7 +55,10 @@ internal class SimulatorTest {
     @Test
     fun runMiniSim() = runBlockingSimulation {
 
-        val meterProvider = SdkMeterProvider.builder()
+        val meterProvider: MeterProvider = SdkMeterProvider
+            .builder()
+            .setClock(clock.toOtelClock())
+            .build()
 
         val msConfig = mutableListOf<MSConfiguration>( MSConfiguration(UUID.randomUUID(),
             listOf(UUID.randomUUID())), MSConfiguration(UUID.randomUUID(),
@@ -71,7 +77,7 @@ internal class SimulatorTest {
         }
 
         val state = SimulatorState(msConfig, PoissonArrival(5.0),  RandomRouting(), LoadBalancer(),
-            clock, this, machineModel, meterProvider.build().get("org.ms.simulator"), mapper)
+            clock, this, machineModel, meterProvider.get("ms-meter"), mapper)
 
         state.run(3)
 

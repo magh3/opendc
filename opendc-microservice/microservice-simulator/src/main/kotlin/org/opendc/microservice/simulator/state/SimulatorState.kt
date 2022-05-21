@@ -39,6 +39,15 @@ public class SimulatorState
 
 
     /**
+     * The total amount of ms invocations.
+     */
+    private val _invocations = meter.counterBuilder("state.invocations.total")
+        .setDescription("Number of ms invocations")
+        .setUnit("1")
+        .build()
+
+
+    /**
      * make ms.
      * make ms instances.
      */
@@ -101,6 +110,7 @@ public class SimulatorState
 
                 for (ms in callMS) {
 
+                    _invocations.add(1)
 
                     launch {
 
