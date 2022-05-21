@@ -16,6 +16,7 @@ import org.opendc.compute.workload.telemetry.SdkTelemetryManager
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import kotlinx.coroutines.delay
 import org.opendc.compute.workload.topology.HostSpec
+import org.opendc.microservice.simulator.execution.LogNormalExe
 import org.opendc.microservice.simulator.microservice.MSConfiguration
 import org.opendc.microservice.simulator.microservice.MSInstance
 import org.opendc.microservice.simulator.mapping.RandomRouting
@@ -59,8 +60,8 @@ internal class SimulatorTest {
             listOf(UUID.randomUUID())) )
 
         val workload = spyk(object : MSWorkload, SimWorkload by SimFlopsWorkload(1000) {
-            override suspend fun invoke() {
-                delay(5000)
+            override suspend fun invoke(exeTime: Long) {
+                delay(exeTime)
             }
         })
 
@@ -74,6 +75,16 @@ internal class SimulatorTest {
             clock, this, machineModel, meterProvider.get("ms-meter"), mapper)
 
         state.run(3)
+
+        assert(true)
+
+    }
+
+
+    @Test
+    fun logNormalExeTest(){
+
+        println(LogNormalExe().time())
 
         assert(true)
 

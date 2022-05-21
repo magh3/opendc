@@ -10,6 +10,6 @@ public interface MSWorkload: SimWorkload {
     /**
      * This method is invoked when an active microservice instance is invoked.
      */
-    public suspend fun invoke()
+    public suspend fun invoke(exeTime: Long)
 
 }

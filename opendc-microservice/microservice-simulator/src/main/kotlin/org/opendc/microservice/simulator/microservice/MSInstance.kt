@@ -103,7 +103,7 @@ public class MSInstance(private val msId: UUID,
 
                     val request = queue.poll()
                     try {
-                        workload.invoke()
+                        workload.invoke(5000)
                         println(" ${clock.millis()} Finished invoke at coroutine ${Thread.currentThread().name} on instance ${getId()}")
                         request.cont.resume(Unit)
                     } catch (cause: CancellationException) {
