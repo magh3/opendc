@@ -1,4 +1,4 @@
-package org.opendc.microservice.simulator.router
+package org.opendc.microservice.simulator.mapping
 
 import org.opendc.microservice.simulator.microservice.Microservice
 import kotlin.random.Random

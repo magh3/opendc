@@ -5,8 +5,6 @@ import io.opentelemetry.api.metrics.MeterProvider
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.opendc.microservice.simulator.microservice.Microservice
-import org.opendc.microservice.simulator.router.ConstForwardPolicy
-import org.opendc.microservice.simulator.router.ForwardPolicy
 import org.opendc.microservice.simulator.router.PoissonArrival
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
@@ -16,14 +14,11 @@ import org.opendc.simulator.core.runBlockingSimulation
 import java.util.*
 import org.opendc.compute.workload.telemetry.SdkTelemetryManager
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import org.opendc.compute.workload.topology.HostSpec
 import org.opendc.microservice.simulator.microservice.MSConfiguration
 import org.opendc.microservice.simulator.microservice.MSInstance
-import org.opendc.microservice.simulator.microservice.MSInstanceDeployer
-import org.opendc.microservice.simulator.router.RandomRouting
+import org.opendc.microservice.simulator.mapping.RandomRouting
 import org.opendc.microservice.simulator.state.LoadBalancer
 import org.opendc.microservice.simulator.state.SimulatorState
 import org.opendc.microservice.simulator.workload.MSWorkload
@@ -34,7 +29,6 @@ import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.compute.workload.SimFlopsWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.telemetry.sdk.toOtelClock
-import java.rmi.server.UID
 
 
 internal class SimulatorTest {
@@ -87,19 +81,6 @@ internal class SimulatorTest {
 
 
     @Test
-    fun msInstanceDeployTest()= runBlockingSimulation {
-
-        val deployer = MSInstanceDeployer()
-
-        // deployer.deploy(Microservice(UUID.randomUUID()).getId(), UUID.randomUUID())
-
-        assert(true)
-
-
-    }
-
-
-    @Test
     fun msConstructTest() = runBlockingSimulation {
 
         val telemetry = SdkTelemetryManager(clock)
@@ -135,51 +116,6 @@ internal class SimulatorTest {
             SimplePowerDriver(ConstantPowerModel(0.0)),
             SimSpaceSharedHypervisorProvider()
         )
-    }
-
-
-
-    @Test
-    fun startTest(){
-
-        val forwardRoutePolicy: ForwardPolicy = ConstForwardPolicy(3)
-
-        val poissonDist = PoissonArrival(5.0)
-
-        var arrivalRequestsNr = poissonDist.nrOfRequests()
-
-        if(arrivalRequestsNr == 0){
-
-            println("No request received")
-
-        }
-        else if(arrivalRequestsNr > 0){
-
-            println("Received $arrivalRequestsNr requests")
-
-            var forwardNr: Int
-
-            for(reqNr in 1..arrivalRequestsNr){
-
-                println("Looping request $reqNr")
-
-                forwardNr = forwardRoutePolicy.getForwardNr()
-
-                println("Request will be forwarded to $forwardNr microservices")
-
-            }
-
-        }
-        else{
-
-            println("Arrival Request error")
-
-            assert(false)
-
-        }
-
-        assert(true)
-
     }
 
 }

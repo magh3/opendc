@@ -10,7 +10,7 @@ import org.opendc.microservice.simulator.microservice.MSConfiguration
 import org.opendc.microservice.simulator.microservice.MSInstanceDeployer
 import org.opendc.microservice.simulator.router.PoissonArrival
 import org.opendc.microservice.simulator.router.RequestPolicy
-import org.opendc.microservice.simulator.router.RoutingPolicy
+import org.opendc.microservice.simulator.mapping.RoutingPolicy
 import org.opendc.microservice.simulator.workload.MSWorkloadMapper
 import org.opendc.simulator.compute.model.MachineModel
 import java.time.Clock
