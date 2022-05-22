@@ -56,9 +56,9 @@ internal class SimulatorTest {
             .setClock(clock.toOtelClock())
             .build()
 
-        val msConfig = mutableListOf<MSConfiguration>( MSConfiguration(UUID.randomUUID(),
-            listOf(UUID.randomUUID())), MSConfiguration(UUID.randomUUID(),
-            listOf(UUID.randomUUID())) )
+        val msConfig = mutableListOf<MSConfiguration>(
+            MSConfiguration(UUID.randomUUID(), listOf(UUID.randomUUID())),
+            MSConfiguration(UUID.randomUUID(), listOf(UUID.randomUUID(), UUID.randomUUID())) )
 
         val workload = spyk(object : MSWorkload, SimWorkload by SimFlopsWorkload(1000) {
             override suspend fun invoke(exeTime: Long) {

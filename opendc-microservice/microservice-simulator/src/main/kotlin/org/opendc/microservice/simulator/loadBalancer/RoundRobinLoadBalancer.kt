@@ -4,15 +4,40 @@ import org.opendc.microservice.simulator.microservice.MSInstance
 import org.opendc.microservice.simulator.microservice.Microservice
 import java.util.*
 
+
 public class RoundRobinLoadBalancer: LoadBalancer {
 
     private val msInvokeMap: MutableMap<UUID, Queue<UUID>> = mutableMapOf()
 
     override fun instance(ms: Microservice, registry: MutableSet<MSInstance>): MSInstance {
 
-        
+        updateDeletedInstances(registry)
 
-        TODO("Not yet implemented")
+        updateNewInstances(registry)
+
+        val selectedInstanceId = selectInstance(ms)
+
+        for(instance in registry){
+
+            if(instance.getId() == selectedInstanceId) return instance
+
+        }
+
+        println("ERROR selecting instance. returning random first instance")
+
+        return registry.elementAt(0)
+
+    }
+
+
+    private fun selectInstance(ms: Microservice): UUID {
+
+        val msInstances = msInvokeMap[ms.getId()] ?: LinkedList(listOf(UUID.randomUUID()))
+
+        if(msInstances.isEmpty()) println("ERROR. No Instance found for this microservice")
+
+        return msInstances.remove()
+
     }
 
 
@@ -29,7 +54,7 @@ public class RoundRobinLoadBalancer: LoadBalancer {
             if(msId !in msInvokeMap.keys){
 
                 // ms not present in map
-                // add ms init with empty queue
+                // add ms and init with empty queue
 
                 msInvokeMap[msId] = LinkedList<UUID>(listOf())
 
