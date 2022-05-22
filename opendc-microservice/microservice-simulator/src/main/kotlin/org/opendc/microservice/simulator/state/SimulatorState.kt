@@ -7,11 +7,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.opendc.microservice.simulator.execution.ExeDelay
 import org.opendc.microservice.simulator.execution.InterArrivalDelay
+import org.opendc.microservice.simulator.loadBalancer.LoadBalancer
 import org.opendc.microservice.simulator.microservice.Microservice
 import org.opendc.microservice.simulator.microservice.MSConfiguration
 import org.opendc.microservice.simulator.microservice.MSInstanceDeployer
 import org.opendc.microservice.simulator.router.PoissonArrival
-import org.opendc.microservice.simulator.router.RequestPolicy
 import org.opendc.microservice.simulator.mapping.RoutingPolicy
 import org.opendc.microservice.simulator.workload.MSWorkloadMapper
 import org.opendc.simulator.compute.model.MachineModel
@@ -20,7 +20,6 @@ import java.time.Clock
 
 public class SimulatorState
     (private val msConfigs: List<MSConfiguration>,
-     private val requestPolicy: RequestPolicy,
      private val routingPolicy: RoutingPolicy,
      private val loadBalancer: LoadBalancer,
      private val exePolicy: ExeDelay,
@@ -107,11 +106,9 @@ public class SimulatorState
 
             while (clock.millis() < lastReqTime) {
 
-                nrOfRequests = requestPolicy.nrOfRequests()
+                println("Request received at time ${clock.millis()}")
 
-                println("Requests = $nrOfRequests at time ${clock.millis()}")
-
-                callMS = routingPolicy.call(microservices, nrOfRequests)
+                callMS = routingPolicy.call(microservices, 1)
 
                 nextReqDelay = interArrivalDelay.time()
 

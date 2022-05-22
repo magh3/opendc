@@ -5,7 +5,6 @@ import io.opentelemetry.api.metrics.MeterProvider
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.opendc.microservice.simulator.microservice.Microservice
-import org.opendc.microservice.simulator.router.PoissonArrival
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.model.MemoryUnit
 import org.opendc.simulator.compute.model.ProcessingNode
@@ -21,7 +20,8 @@ import org.opendc.microservice.simulator.execution.PoissonDelay
 import org.opendc.microservice.simulator.microservice.MSConfiguration
 import org.opendc.microservice.simulator.microservice.MSInstance
 import org.opendc.microservice.simulator.mapping.RandomRouting
-import org.opendc.microservice.simulator.state.LoadBalancer
+import org.opendc.microservice.simulator.loadBalancer.LoadBalancer
+import org.opendc.microservice.simulator.loadBalancer.MockLoadBalancer
 import org.opendc.microservice.simulator.state.SimulatorState
 import org.opendc.microservice.simulator.workload.MSWorkload
 import org.opendc.microservice.simulator.workload.MSWorkloadMapper
@@ -72,7 +72,7 @@ internal class SimulatorTest {
             }
         }
 
-        val state = SimulatorState(msConfig, PoissonArrival(3.0),  RandomRouting(), LoadBalancer(),
+        val state = SimulatorState(msConfig, RandomRouting(), MockLoadBalancer(),
             LogNormalExe(6.0), clock, this, machineModel,
             meterProvider.get("ms-meter"), mapper, 3000, PoissonDelay(500.0))
 
