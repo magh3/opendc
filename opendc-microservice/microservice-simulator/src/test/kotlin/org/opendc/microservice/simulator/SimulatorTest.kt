@@ -22,6 +22,8 @@ import org.opendc.microservice.simulator.microservice.MSInstance
 import org.opendc.microservice.simulator.mapping.RandomRouting
 import org.opendc.microservice.simulator.loadBalancer.LoadBalancer
 import org.opendc.microservice.simulator.loadBalancer.MockLoadBalancer
+import org.opendc.microservice.simulator.loadBalancer.RoundRobinLoadBalancer
+import org.opendc.microservice.simulator.mapping.ProbRouting
 import org.opendc.microservice.simulator.state.SimulatorState
 import org.opendc.microservice.simulator.workload.MSWorkload
 import org.opendc.microservice.simulator.workload.MSWorkloadMapper
@@ -72,7 +74,7 @@ internal class SimulatorTest {
             }
         }
 
-        val state = SimulatorState(msConfig, RandomRouting(), MockLoadBalancer(),
+        val state = SimulatorState(msConfig, ProbRouting(listOf(0.2,0.8)), RoundRobinLoadBalancer(),
             LogNormalExe(6.0), clock, this, machineModel,
             meterProvider.get("ms-meter"), mapper, 3000, PoissonDelay(500.0))
 

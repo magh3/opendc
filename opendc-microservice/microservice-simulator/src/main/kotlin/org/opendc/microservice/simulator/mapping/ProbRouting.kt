@@ -44,13 +44,17 @@ public class ProbRouting(callProb: List<Double>): RoutingPolicy {
 
         var nextProb: Double
 
-        for(i in normalizedProbs.indices){
+        for(i in 0..(normalizedProbs.size - 2) ){
+
+            // -2 because last index is at -1 and next prob end at -2
 
             currentProb = normalizedProbs[i]
 
             nextProb = normalizedProbs[i+1]
 
             if(randProb >= currentProb && randProb < nextProb) return microservices[i]
+
+            else if(i == normalizedProbs.size - 2) return microservices[i+1]
 
         }
 
