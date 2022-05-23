@@ -55,6 +55,8 @@ public class MSInstance(private val msId: UUID,
      */
     private var job: Job? = null
 
+    private var runningLoad = 0
+
 
     init{
 
@@ -78,7 +80,7 @@ public class MSInstance(private val msId: UUID,
 
     public fun load(): Int {
 
-        var load = 0
+        var load = runningLoad
 
         for(request in queue){
 
@@ -120,11 +122,17 @@ public class MSInstance(private val msId: UUID,
 
                     val request = queue.poll()
 
+                    runningLoad = request.exeTime.toInt()
+
                     println("exeTime of this request is ${request.exeTime}")
 
                     try {
                         workload.invoke(request.exeTime)
+
+                        runningLoad = 0
+
                         println(" ${clock.millis()} Finished invoke at coroutine ${Thread.currentThread().name} on instance ${getId()}")
+
                         request.cont.resume(Unit)
                     } catch (cause: CancellationException) {
                         request.cont.resumeWithException(cause)
@@ -150,7 +158,7 @@ public class MSInstance(private val msId: UUID,
 
         // println("MSInstance invoked with id "+ getId()+" at coroutine ${Thread.currentThread().name} ")
 
-        println(" ${clock.millis()} Queuing Invoke request for instance "+ getId())
+        println(" ${clock.millis()} Queuing Invoke request for instance "+ getId() +" with exeTime $exeTime")
 
         return suspendCancellableCoroutine { cont ->
             queue.add(InvocationRequest(cont, exeTime))
