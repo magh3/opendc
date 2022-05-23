@@ -54,7 +54,13 @@ public class ProbRouting(callProb: List<Double>): RoutingPolicy {
 
             if(randProb >= currentProb && randProb < nextProb) return microservices[i]
 
-            else if(i == normalizedProbs.size - 2) return microservices[i+1]
+            else if(i == normalizedProbs.size - 2) {
+
+                // Last probability in list matches so return last instance
+
+                return microservices[i+1]
+
+            }
 
         }
 

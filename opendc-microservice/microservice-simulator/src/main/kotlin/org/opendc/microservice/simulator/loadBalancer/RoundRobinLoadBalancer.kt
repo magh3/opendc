@@ -11,26 +11,24 @@ public class RoundRobinLoadBalancer: LoadBalancer {
 
     override fun instance(ms: Microservice, registry: MutableSet<MSInstance>): MSInstance {
 
+        // update local data for all microservices
+
         updateDeletedInstances(registry)
 
         updateNewInstances(registry)
 
+        // select instance of specific microservice using round robin
+
         val selectedInstanceId = selectInstance(ms)
 
-        for(instance in registry){
-
-            if(instance.getId() == selectedInstanceId) return instance
-
-        }
-
-        println("ERROR selecting instance. returning random first instance")
-
-        return registry.elementAt(0)
+        return instanceFromId(selectedInstanceId, registry)
 
     }
 
 
     private fun selectInstance(ms: Microservice): UUID {
+
+        // select from instances of the specific microservice using round robin
 
         val msInstances = msInvokeMap[ms.getId()] ?: LinkedList(listOf(UUID.randomUUID()))
 

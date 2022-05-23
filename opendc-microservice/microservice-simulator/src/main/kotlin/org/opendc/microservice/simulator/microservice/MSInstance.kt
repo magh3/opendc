@@ -40,6 +40,22 @@ public class MSInstance(private val msId: UUID,
      */
     private val chan = Channel<Unit>(Channel.RENDEZVOUS)
 
+    /**
+     * The machine that will execute the workloads.
+     */
+    private val machine: SimMachine = SimBareMetalMachine(
+        FlowEngine(scope.coroutineContext, clock),
+        model,
+        SimplePowerDriver(ConstantPowerModel(0.0))
+    )
+
+
+    /**
+     * The job associated with the lifecycle of the instance.
+     */
+    private var job: Job? = null
+
+
     init{
 
         registryManager.registerInstance(this)
@@ -60,20 +76,21 @@ public class MSInstance(private val msId: UUID,
     }
 
 
-    /**
-     * The machine that will execute the workloads.
-     */
-    private val machine: SimMachine = SimBareMetalMachine(
-        FlowEngine(scope.coroutineContext, clock),
-        model,
-        SimplePowerDriver(ConstantPowerModel(0.0))
-    )
+    public fun load(): Int {
 
+        var load = 0
 
-    /**
-     * The job associated with the lifecycle of the instance.
-     */
-    private var job: Job? = null
+        for(request in queue){
+
+            load += request.exeTime.toInt()
+
+        }
+
+        println("Queued load for instance ${getId()} is $load")
+
+        return load
+
+    }
 
 
     public fun run(){

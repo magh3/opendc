@@ -87,7 +87,7 @@ public class SimulatorState
     /**
      * run simulator for t Time unit.
      */
-    suspend public fun run(t: Int){
+    suspend public fun run(){
 
         var nrOfRequests = 0
 
