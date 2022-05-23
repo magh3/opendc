@@ -23,6 +23,9 @@ public class ProbRouting(callProb: List<Double>): RoutingPolicy {
 
         require(microservices.isNotEmpty()){"No microservice found."}
 
+        require(nrOfMS <= microservices.size){"nr of ms requested cannot be " +
+            "more than nr of ms present"}
+
         if(microservices.size == 1) return microservices.toList()
 
         else{

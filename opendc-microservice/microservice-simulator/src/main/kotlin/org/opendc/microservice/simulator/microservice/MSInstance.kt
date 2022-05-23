@@ -1,5 +1,6 @@
 package org.opendc.microservice.simulator.microservice
 
+import io.opentelemetry.api.metrics.LongHistogram
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import org.opendc.microservice.simulator.state.RegistryManager
@@ -63,6 +64,7 @@ public class MSInstance(private val msId: UUID,
         registryManager.registerInstance(this)
 
     }
+
 
     public fun getId(): UUID {
 
