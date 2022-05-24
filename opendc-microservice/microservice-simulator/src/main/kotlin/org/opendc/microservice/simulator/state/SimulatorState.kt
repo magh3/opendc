@@ -1,10 +1,7 @@
 package org.opendc.microservice.simulator.state
 
 import io.opentelemetry.api.metrics.Meter
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.opendc.microservice.simulator.execution.ExeDelay
 import org.opendc.microservice.simulator.execution.InterArrivalDelay
 import org.opendc.microservice.simulator.loadBalancer.LoadBalancer
@@ -89,9 +86,9 @@ public class SimulatorState
      */
     suspend public fun run(){
 
-        var nrOfRequests = 0
+        // var nrOfRequests = 0
 
-        val poissonArrival = PoissonArrival(5.0)
+        // val poissonArrival = PoissonArrival(5.0)
 
         var callMS: List<Microservice>
 
@@ -135,58 +132,17 @@ public class SimulatorState
 
         }
 
+        val myCollection = registryManager.getInstances()
 
-    }
+        val iterator = myCollection.iterator()
 
+        while(iterator.hasNext()) {
 
-    /*
+            val item = iterator.next()
 
-    /*
-    * runTime: time in sec to run the simulator
-    * */
-    public fun runSimulator(runTime: Int){
-
-        for(i in 0 until runTime) simulateOneSecRequests()
-
-    }
-
-
-    private fun simulateOneSecRequests(){
-
-        val poissonDist = PoissonArrival(requestRate)
-
-        var arrivalAmount = poissonDist.getSample()
-
-        if(arrivalAmount == 0){
-
-            println("No request received")
-
-        }
-        else if(arrivalAmount > 0){
-
-            println("Received $arrivalAmount requests")
-
-            var forwardNr: Int
-
-            for(reqNr in 1..arrivalAmount){
-
-                println("Looping request $reqNr")
-
-                forwardNr = forwardPolicy.getForwardNr()
-
-                println("Request will be forwarded to $forwardNr microservices")
-
-            }
-
-        }
-        else{
-
-            println("Arrival Request error")
-
+            item.close()
         }
 
     }
-
-     */
 
 }

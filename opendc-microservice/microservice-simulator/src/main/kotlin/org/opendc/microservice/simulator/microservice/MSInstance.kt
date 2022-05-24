@@ -58,6 +58,7 @@ public class MSInstance(private val msId: UUID,
 
     private var runningLoad = 0
 
+    private var state: InstanceState = InstanceState.Idle
 
     init{
 
@@ -79,7 +80,9 @@ public class MSInstance(private val msId: UUID,
 
     }
 
-
+    /**
+     * load is exe time
+     */
     public fun load(): Int {
 
         var load = runningLoad
@@ -93,6 +96,24 @@ public class MSInstance(private val msId: UUID,
         println("Queued load for instance ${getId()} is $load")
 
         return load
+
+    }
+
+
+    /**
+     * connections are nr of requests queued
+     */
+    public fun connections(): Int {
+
+        var connections = 0
+
+        if(state == InstanceState.Active) connections = queue.size + 1
+
+        else connections = queue.size
+
+        println("Connections for instance ${getId()} is $connections")
+
+        return connections
 
     }
 
@@ -120,6 +141,8 @@ public class MSInstance(private val msId: UUID,
 
                 while (queue.isNotEmpty()) {
 
+                    state = InstanceState.Active
+
                     println(" ${clock.millis()} Starting queued request at coroutine ${Thread.currentThread().name} on instance ${getId()}")
 
                     val request = queue.poll()
@@ -129,6 +152,7 @@ public class MSInstance(private val msId: UUID,
                     println("exeTime of this request is ${request.exeTime}")
 
                     try {
+
                         workload.invoke(request.exeTime)
 
                         runningLoad = 0
@@ -136,12 +160,21 @@ public class MSInstance(private val msId: UUID,
                         println(" ${clock.millis()} Finished invoke at coroutine ${Thread.currentThread().name} on instance ${getId()}")
 
                         request.cont.resume(Unit)
+
                     } catch (cause: CancellationException) {
+
                         request.cont.resumeWithException(cause)
+
                         throw cause
+
                     } catch (cause: Throwable) {
+
                         request.cont.resumeWithException(cause)
+
                     }
+
+                    state = InstanceState.Idle
+
                 }
 
             }
@@ -173,9 +206,15 @@ public class MSInstance(private val msId: UUID,
     /**
      * stop instance, close / remove.
      */
-    public fun close(){
+    public suspend fun close(){
 
-        registryManager.deregisterInstance(this)
+        // registryManager.deregisterInstance(this)
+
+        job?.cancel()
+
+        job?.join()
+
+        machine.cancel()
 
     }
 

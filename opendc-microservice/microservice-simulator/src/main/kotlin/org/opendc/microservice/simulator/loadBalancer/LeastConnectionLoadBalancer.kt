@@ -5,10 +5,9 @@ import org.opendc.microservice.simulator.microservice.Microservice
 import java.util.*
 
 /**
- * forward requests to least loaded instance.
- * Load is calculated from exe time
+ * forward request to instance with least number of waiting requests.
  */
-public class GreedyLoadBalancer: LoadBalancer {
+public class LeastConnectionLoadBalancer: LoadBalancer {
 
     override fun instance(ms: Microservice, registry: MutableSet<MSInstance>): MSInstance {
 
@@ -16,13 +15,13 @@ public class GreedyLoadBalancer: LoadBalancer {
 
         // get load for instances of the specific ms
 
-        val instanceLoadMap = getLoads(msInstances)
+        val instanceConnectionsMap = getConnections(msInstances)
 
         // find min instance load entry
 
-        var min: Map.Entry<UUID, Int> = instanceLoadMap.iterator().next();
+        var min: Map.Entry<UUID, Int> = instanceConnectionsMap.iterator().next();
 
-        for (entry in instanceLoadMap) {
+        for (entry in instanceConnectionsMap) {
 
             if ( min.value > entry.value) {
 
@@ -36,19 +35,17 @@ public class GreedyLoadBalancer: LoadBalancer {
     }
 
 
-    private fun getLoads(msInstances: MutableSet<MSInstance>): MutableMap<UUID, Int> {
+    private fun getConnections(msInstances: MutableSet<MSInstance>): MutableMap<UUID, Int> {
 
-        val instanceLoadMap: MutableMap<UUID, Int> = mutableMapOf()
+        val instanceConnectionsMap: MutableMap<UUID, Int> = mutableMapOf()
 
         for(instance in msInstances){
 
-            instanceLoadMap[instance.getId()] = instance.load()
+            instanceConnectionsMap[instance.getId()] = instance.connections()
 
         }
 
-        return instanceLoadMap
+        return instanceConnectionsMap
 
     }
-
-
 }
