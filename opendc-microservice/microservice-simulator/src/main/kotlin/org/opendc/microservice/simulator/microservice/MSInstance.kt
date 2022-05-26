@@ -1,17 +1,14 @@
 package org.opendc.microservice.simulator.microservice
 
-import io.opentelemetry.api.metrics.LongHistogram
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import org.opendc.microservice.simulator.state.RegistryManager
 import org.opendc.microservice.simulator.workload.MSWorkloadMapper
 import org.opendc.simulator.compute.SimBareMetalMachine
 import org.opendc.simulator.compute.SimMachine
-import org.opendc.simulator.compute.SimMachineContext
 import org.opendc.simulator.compute.model.MachineModel
 import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
-import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.simulator.flow.FlowEngine
 import java.time.Clock
 import java.util.*
@@ -56,7 +53,7 @@ public class MSInstance(private val msId: UUID,
      */
     private var job: Job? = null
 
-    private var runningLoadEnd: Long = 0
+    private var runningLoadEndTime: Long = 0
 
     private var state: InstanceState = InstanceState.Idle
 
@@ -90,7 +87,7 @@ public class MSInstance(private val msId: UUID,
 
         val currentTime = clock.millis()
 
-        if(runningLoadEnd > currentTime) load = (runningLoadEnd - currentTime).toInt()
+        if(runningLoadEndTime > currentTime) load = (runningLoadEndTime - currentTime).toInt()
 
         for(request in queue){
 
@@ -108,7 +105,7 @@ public class MSInstance(private val msId: UUID,
     /**
      * connections are nr of requests queued
      */
-    public fun connections(): Int {
+    public fun activeConnections(): Int {
 
         var connections = 0
 
@@ -129,12 +126,7 @@ public class MSInstance(private val msId: UUID,
 
             launch{
 
-                // println(" ${clock.millis()} launching instance with UUID "+getId()+" at coroutine ${Thread.currentThread().name} ")
-
                 machine.startWorkload(workload)
-
-                // println(" ${clock.millis()} Finished instance workload"+" at coroutine ${Thread.currentThread().name}" )
-
 
             }
 
@@ -152,7 +144,7 @@ public class MSInstance(private val msId: UUID,
 
                     val request = queue.poll()
 
-                    runningLoadEnd = clock.millis() + request.exeTime
+                    runningLoadEndTime = clock.millis() + request.exeTime
 
                     println("exeTime of this request is ${request.exeTime}")
 
@@ -193,8 +185,6 @@ public class MSInstance(private val msId: UUID,
      * if not active, make it active.
      */
     suspend public fun invoke(exeTime: Long){
-
-        // println("MSInstance invoked with id "+ getId()+" at coroutine ${Thread.currentThread().name} ")
 
         println(" ${clock.millis()} Queuing Invoke request for instance "+ getId() +" with exeTime $exeTime")
 

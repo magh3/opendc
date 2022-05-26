@@ -51,11 +51,6 @@ internal class SimulatorTest {
     @Test
     fun runMiniSim() = runBlockingSimulation {
 
-        val meterProvider: MeterProvider = SdkMeterProvider
-            .builder()
-            .setClock(clock.toOtelClock())
-            .build()
-
         val msConfig = mutableListOf<MSConfiguration>(
             MSConfiguration(UUID.randomUUID(), listOf(UUID.randomUUID())),
             MSConfiguration(UUID.randomUUID(), listOf(UUID.randomUUID(), UUID.randomUUID())) )
@@ -73,8 +68,7 @@ internal class SimulatorTest {
         }
 
         val state = SimulatorState(msConfig, ProbRouting(listOf(0.2,0.8)), GreedyLoadBalancer(),
-            LogNormalExe(6.0), clock, this, machineModel,
-            meterProvider.get("ms-meter"), mapper, 10000, PoissonDelay(200.0))
+            LogNormalExe(6.0), clock, this, machineModel, mapper, 10000, PoissonDelay(200.0))
 
         state.run()
 

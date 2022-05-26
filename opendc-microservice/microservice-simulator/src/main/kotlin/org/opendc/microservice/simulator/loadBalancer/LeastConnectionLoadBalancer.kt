@@ -41,7 +41,7 @@ public class LeastConnectionLoadBalancer: LoadBalancer {
 
         for(instance in msInstances){
 
-            instanceConnectionsMap[instance.getId()] = instance.connections()
+            instanceConnectionsMap[instance.getId()] = instance.activeConnections()
 
         }
 

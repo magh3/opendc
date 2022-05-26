@@ -23,7 +23,6 @@ public class SimulatorState
      private val clock: Clock,
      private val scope: CoroutineScope,
      private val model: MachineModel,
-     private val meter: Meter,
      private val mapper: MSWorkloadMapper,
      private val lastReqTime: Int,
      private val interArrivalDelay: InterArrivalDelay
@@ -42,10 +41,7 @@ public class SimulatorState
     /**
      * The total amount of ms invocations.
      */
-    private val _invocations = meter.counterBuilder("state.invocations.total")
-        .setDescription("Number of ms invocations")
-        .setUnit("1")
-        .build()
+    private var totalInvocations:Long = 0
 
 
     /**
@@ -86,10 +82,6 @@ public class SimulatorState
      */
     suspend public fun run(){
 
-        // var nrOfRequests = 0
-
-        // val poissonArrival = PoissonArrival(5.0)
-
         var callMS: List<Microservice>
 
         var exeTime: Long
@@ -99,7 +91,6 @@ public class SimulatorState
         // time loop
 
         coroutineScope {
-
 
             while (clock.millis() < lastReqTime) {
 
@@ -113,7 +104,7 @@ public class SimulatorState
 
                 for (ms in callMS) {
 
-                    _invocations.add(1)
+                    totalInvocations += 1
 
                     exeTime = exePolicy.time()
 
