@@ -82,6 +82,7 @@ public class MSInstance(private val msId: UUID,
 
     /**
      * load is exe time
+     * includes running load full time
      */
     public fun load(): Int {
 
@@ -173,9 +174,9 @@ public class MSInstance(private val msId: UUID,
 
                     }
 
-                    state = InstanceState.Idle
-
                 }
+
+                state = InstanceState.Idle
 
             }
 

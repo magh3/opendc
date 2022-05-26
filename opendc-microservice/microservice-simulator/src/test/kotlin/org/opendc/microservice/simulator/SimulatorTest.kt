@@ -75,9 +75,9 @@ internal class SimulatorTest {
             }
         }
 
-        val state = SimulatorState(msConfig, ProbRouting(listOf(0.2,0.8)), LeastConnectionLoadBalancer(),
+        val state = SimulatorState(msConfig, ProbRouting(listOf(0.2,0.8)), RoundRobinLoadBalancer(),
             LogNormalExe(6.0), clock, this, machineModel,
-            meterProvider.get("ms-meter"), mapper, 10000, PoissonDelay(500.0))
+            meterProvider.get("ms-meter"), mapper, 10000, PoissonDelay(200.0))
 
         state.run()
 
