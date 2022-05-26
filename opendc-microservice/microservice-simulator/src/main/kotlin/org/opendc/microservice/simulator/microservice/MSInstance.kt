@@ -56,7 +56,7 @@ public class MSInstance(private val msId: UUID,
      */
     private var job: Job? = null
 
-    private var runningLoad = 0
+    private var runningLoadEnd: Long = 0
 
     private var state: InstanceState = InstanceState.Idle
 
@@ -81,12 +81,16 @@ public class MSInstance(private val msId: UUID,
     }
 
     /**
-     * load is exe time
-     * includes running load full time
+     * load is exe time.
+     * includes left over currently running load time
      */
     public fun load(): Int {
 
-        var load = runningLoad
+        var load = 0
+
+        val currentTime = clock.millis()
+
+        if(runningLoadEnd > currentTime) load = (runningLoadEnd - currentTime).toInt()
 
         for(request in queue){
 
@@ -148,15 +152,13 @@ public class MSInstance(private val msId: UUID,
 
                     val request = queue.poll()
 
-                    runningLoad = request.exeTime.toInt()
+                    runningLoadEnd = clock.millis() + request.exeTime
 
                     println("exeTime of this request is ${request.exeTime}")
 
                     try {
 
                         workload.invoke(request.exeTime)
-
-                        runningLoad = 0
 
                         println(" ${clock.millis()} Finished invoke at coroutine ${Thread.currentThread().name} on instance ${getId()}")
 

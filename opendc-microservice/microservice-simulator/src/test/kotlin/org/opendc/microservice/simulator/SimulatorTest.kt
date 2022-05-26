@@ -17,13 +17,10 @@ import kotlinx.coroutines.delay
 import org.opendc.compute.workload.topology.HostSpec
 import org.opendc.microservice.simulator.execution.LogNormalExe
 import org.opendc.microservice.simulator.execution.PoissonDelay
-import org.opendc.microservice.simulator.loadBalancer.LeastConnectionLoadBalancer
+import org.opendc.microservice.simulator.loadBalancer.*
 import org.opendc.microservice.simulator.microservice.MSConfiguration
 import org.opendc.microservice.simulator.microservice.MSInstance
 import org.opendc.microservice.simulator.mapping.RandomRouting
-import org.opendc.microservice.simulator.loadBalancer.LoadBalancer
-import org.opendc.microservice.simulator.loadBalancer.MockLoadBalancer
-import org.opendc.microservice.simulator.loadBalancer.RoundRobinLoadBalancer
 import org.opendc.microservice.simulator.mapping.ProbRouting
 import org.opendc.microservice.simulator.state.SimulatorState
 import org.opendc.microservice.simulator.workload.MSWorkload
@@ -75,7 +72,7 @@ internal class SimulatorTest {
             }
         }
 
-        val state = SimulatorState(msConfig, ProbRouting(listOf(0.2,0.8)), RoundRobinLoadBalancer(),
+        val state = SimulatorState(msConfig, ProbRouting(listOf(0.2,0.8)), GreedyLoadBalancer(),
             LogNormalExe(6.0), clock, this, machineModel,
             meterProvider.get("ms-meter"), mapper, 10000, PoissonDelay(200.0))
 
