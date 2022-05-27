@@ -13,6 +13,7 @@ import org.opendc.microservice.simulator.mapping.RoutingPolicy
 import org.opendc.microservice.simulator.workload.MSWorkloadMapper
 import org.opendc.simulator.compute.model.MachineModel
 import java.time.Clock
+import java.util.*
 
 
 public class SimulatorState
@@ -130,6 +131,8 @@ public class SimulatorState
         while(iterator.hasNext()) {
 
             val item = iterator.next()
+
+            println(Arrays.toString(item.getStats().values))
 
             item.close()
         }

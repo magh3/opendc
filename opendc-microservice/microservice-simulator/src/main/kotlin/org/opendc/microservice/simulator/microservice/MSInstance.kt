@@ -2,6 +2,7 @@ package org.opendc.microservice.simulator.microservice
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics
 import org.opendc.microservice.simulator.state.RegistryManager
 import org.opendc.microservice.simulator.workload.MSWorkloadMapper
 import org.opendc.simulator.compute.SimBareMetalMachine
@@ -57,6 +58,12 @@ public class MSInstance(private val msId: UUID,
 
     private var state: InstanceState = InstanceState.Idle
 
+    private var exeTime = DescriptiveStatistics().apply{ windowSize = 100 }
+
+    private val queueTime = DescriptiveStatistics().apply{ windowSize = 100 }
+
+    private val slowDown = DescriptiveStatistics().apply{ windowSize = 100 }
+
     init{
 
         registryManager.registerInstance(this)
@@ -77,25 +84,41 @@ public class MSInstance(private val msId: UUID,
 
     }
 
+
     /**
      * load is exe time.
      * includes left over currently running load time
      */
-    public fun load(): Int {
+    public fun totalLoad(): Int {
 
         var load = 0
 
         val currentTime = clock.millis()
 
+        // check for remaining running load
+
         if(runningLoadEndTime > currentTime) load = (runningLoadEndTime - currentTime).toInt()
+
+        // queued load
+
+        load += queueLoad()
+
+        println("Queued load for instance ${getId()} is $load")
+
+        return load
+
+    }
+
+
+    private fun queueLoad(): Int {
+
+        var load = 0
 
         for(request in queue){
 
             load += request.exeTime.toInt()
 
         }
-
-        println("Queued load for instance ${getId()} is $load")
 
         return load
 
@@ -116,6 +139,13 @@ public class MSInstance(private val msId: UUID,
         println("Connections for instance ${getId()} is $connections")
 
         return connections
+
+    }
+
+
+    public fun getStats(): DescriptiveStatistics {
+
+        return queueTime
 
     }
 
@@ -147,6 +177,8 @@ public class MSInstance(private val msId: UUID,
                     runningLoadEndTime = clock.millis() + request.exeTime
 
                     println("exeTime of this request is ${request.exeTime}")
+
+                    exeTime.addValue(request.exeTime.toDouble())
 
                     try {
 
@@ -187,6 +219,12 @@ public class MSInstance(private val msId: UUID,
     suspend public fun invoke(exeTime: Long){
 
         println(" ${clock.millis()} Queuing Invoke request for instance "+ getId() +" with exeTime $exeTime")
+
+        val waitTime = queueLoad().toDouble()
+
+        queueTime.addValue(waitTime)
+
+        slowDown.addValue(waitTime+exeTime/exeTime)
 
         return suspendCancellableCoroutine { cont ->
             queue.add(InvocationRequest(cont, exeTime))

@@ -42,7 +42,7 @@ public class GreedyLoadBalancer: LoadBalancer {
 
         for(instance in msInstances){
 
-            instanceLoadMap[instance.getId()] = instance.load()
+            instanceLoadMap[instance.getId()] = instance.totalLoad()
 
         }
 
