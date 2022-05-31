@@ -7,7 +7,7 @@ import kotlin.random.Random
  * check sum of probabilities should be equal to 1.
  * Also check the size of list should be equal to size of microservices.
  */
-public class ProbRouting(callProb: List<Double>): RoutingPolicy {
+public class ProbRouting(private val callProb: List<Double>, private val nrOfMS: Int): RoutingPolicy {
 
     private val normalizedProbs = normalizeProb(callProb)
 
@@ -19,7 +19,7 @@ public class ProbRouting(callProb: List<Double>): RoutingPolicy {
 
     }
 
-    override fun call(microservices: MutableList<Microservice>, nrOfMS: Int): List<Microservice> {
+    override fun call(microservices: MutableList<Microservice>): List<Microservice> {
 
         require(microservices.isNotEmpty()){"No microservice found."}
 
@@ -30,7 +30,15 @@ public class ProbRouting(callProb: List<Double>): RoutingPolicy {
 
         else{
 
-            return mutableListOf( getProbMS(microservices) )
+            val callMS = mutableListOf<Microservice>()
+
+            for(i in 1..nrOfMS){
+
+                callMS.add(getProbMS(microservices))
+
+            }
+
+            return callMS
 
         }
 

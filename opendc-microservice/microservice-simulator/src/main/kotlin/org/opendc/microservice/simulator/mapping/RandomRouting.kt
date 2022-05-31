@@ -6,9 +6,9 @@ import kotlin.random.Random
 /**
  * check nr should not be greater than ms present
  */
-public class RandomRouting(): RoutingPolicy {
+public class RandomRouting(private val nrOfMS: Int): RoutingPolicy {
 
-    override fun call(microservices: MutableList<Microservice>, nrOfMS: Int): List<Microservice> {
+    override fun call(microservices: MutableList<Microservice>): List<Microservice> {
 
         val callMS = mutableListOf<Microservice>()
 

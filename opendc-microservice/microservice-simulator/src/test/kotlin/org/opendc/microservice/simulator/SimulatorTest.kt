@@ -56,8 +56,7 @@ internal class SimulatorTest {
             MSConfiguration(UUID.randomUUID(), listOf(UUID.randomUUID(), UUID.randomUUID())) )
 
         val workload = spyk(object : MSWorkload, SimWorkload by SimFlopsWorkload(1000) {
-            override suspend fun invoke(exeTime: Long) {
-                delay(exeTime)
+            override suspend fun invoke() {
             }
         })
 
@@ -67,10 +66,12 @@ internal class SimulatorTest {
             }
         }
 
-        val state = SimulatorState(msConfig, ProbRouting(listOf(0.2,0.8)), RoundRobinLoadBalancer(),
+        val state = SimulatorState(msConfig, ProbRouting(listOf(0.2,0.8),2), RoundRobinLoadBalancer(),
             LogNormalExe(6.0), clock, this, machineModel, mapper, 10000, PoissonDelay(200.0))
 
         state.run()
+
+        state.stop()
 
         assert(true)
 

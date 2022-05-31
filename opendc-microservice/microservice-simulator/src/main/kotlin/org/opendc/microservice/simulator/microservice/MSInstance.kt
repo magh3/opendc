@@ -4,6 +4,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics
 import org.opendc.microservice.simulator.state.RegistryManager
+import org.opendc.microservice.simulator.state.SimulatorState
 import org.opendc.microservice.simulator.workload.MSWorkloadMapper
 import org.opendc.simulator.compute.SimBareMetalMachine
 import org.opendc.simulator.compute.SimMachine
@@ -23,6 +24,7 @@ import kotlin.coroutines.resumeWithException
  */
 public class MSInstance(private val msId: UUID,
                         private val id: UUID,
+                        private val simState: SimulatorState,
                         private val clock: Clock,
                         private val scope: CoroutineScope,
                         private val model: MachineModel,
@@ -182,7 +184,12 @@ public class MSInstance(private val msId: UUID,
 
                     try {
 
-                        workload.invoke(request.exeTime)
+                        workload.invoke()
+
+                        // commPolicy.communicate(sync)
+                        // load balancer. instance. totalload + exe time
+
+                        delay(request.exeTime)
 
                         println(" ${clock.millis()} Finished invoke at coroutine ${Thread.currentThread().name} on instance ${getId()}")
 

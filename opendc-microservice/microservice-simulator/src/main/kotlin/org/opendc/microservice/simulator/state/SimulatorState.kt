@@ -2,18 +2,20 @@ package org.opendc.microservice.simulator.state
 
 import io.opentelemetry.api.metrics.Meter
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import org.opendc.microservice.simulator.execution.ExeDelay
 import org.opendc.microservice.simulator.execution.InterArrivalDelay
 import org.opendc.microservice.simulator.loadBalancer.LoadBalancer
-import org.opendc.microservice.simulator.microservice.Microservice
-import org.opendc.microservice.simulator.microservice.MSConfiguration
-import org.opendc.microservice.simulator.microservice.MSInstanceDeployer
 import org.opendc.microservice.simulator.router.PoissonArrival
 import org.opendc.microservice.simulator.mapping.RoutingPolicy
+import org.opendc.microservice.simulator.microservice.*
 import org.opendc.microservice.simulator.workload.MSWorkloadMapper
 import org.opendc.simulator.compute.model.MachineModel
 import java.time.Clock
 import java.util.*
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 
 public class SimulatorState
@@ -44,6 +46,20 @@ public class SimulatorState
      */
     private var totalInvocations:Long = 0
 
+    private var job: Job? = null
+
+    private val queue = ArrayDeque<MSRequest>()
+
+    /**
+     * A channel used to signal that new invocations have been enqueued.
+     */
+    private val chan = Channel<Unit>(Channel.RENDEZVOUS)
+
+    init{
+
+        listen()
+
+    }
 
     /**
      * make ms.
@@ -67,13 +83,67 @@ public class SimulatorState
 
             for(instanceId in config.getInstanceIds()){
 
-                deployer.deploy(ms.getId(), instanceId, clock, scope, model, registryManager, mapper)
+                deployer.deploy(ms.getId(), instanceId, this, clock, scope, model, registryManager, mapper)
 
             }
 
         }
 
         return msList
+
+    }
+
+    /**
+     * listens to incoming requests
+     */
+    private fun listen(){
+
+        job = scope.launch {
+
+            while (isActive) {
+                if (queue.isEmpty()) {
+                    chan.receive()
+                }
+
+                while (queue.isNotEmpty()) {
+
+                    val request = queue.poll()
+
+                    val exeTime = exePolicy.time()
+
+                    try {
+
+                        launch {
+
+                            loadBalancer.instance(request.ms, registryManager.getInstances())
+                                .invoke(exeTime)
+
+                            request.cont.resume(Unit)
+
+                            println("--------------finished request")
+
+                        }
+
+                    } catch (cause: CancellationException) {
+
+                        request.cont.resumeWithException(cause)
+
+                        throw cause
+
+                    } catch (cause: Throwable) {
+
+                        request.cont.resumeWithException(cause)
+
+                    }
+
+                }
+
+
+
+            }
+
+
+        }
 
     }
 
@@ -95,9 +165,11 @@ public class SimulatorState
 
             while (clock.millis() < lastReqTime) {
 
-                println("Request received at time ${clock.millis()}")
+                exeTime = exePolicy.time()
 
-                callMS = routingPolicy.call(microservices, 1)
+                callMS = routingPolicy.call(microservices)
+
+                println("Request received at time ${clock.millis()} for ${callMS.size} microservices")
 
                 nextReqDelay = interArrivalDelay.time()
 
@@ -107,14 +179,11 @@ public class SimulatorState
 
                     totalInvocations += 1
 
-                    exeTime = exePolicy.time()
+                    launch{
 
-                    launch {
-
-                        loadBalancer.instance(ms, registryManager.getInstances()).invoke(exeTime)
+                        invoke(ms)
 
                     }
-
 
                 }
 
@@ -136,6 +205,30 @@ public class SimulatorState
 
             item.close()
         }
+
+    }
+
+
+    private data class MSRequest(val cont: Continuation<Unit>, val ms: Microservice)
+
+
+    suspend public fun invoke(ms: Microservice){
+
+        println(" ${clock.millis()}  Invoke request for MS ${ms.getId()}")
+
+        return suspendCancellableCoroutine { cont ->
+            queue.add(MSRequest(cont, ms))
+            chan.trySend(Unit)
+        }
+
+    }
+
+
+    public suspend fun stop(){
+
+        job?.cancel()
+
+        job?.join()
 
     }
 
