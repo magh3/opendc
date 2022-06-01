@@ -115,12 +115,14 @@ public class SimulatorState
 
                         launch {
 
+                            val startTime = clock.millis()
+
                             loadBalancer.instance(request.ms, registryManager.getInstances())
                                 .invoke(exeTime)
 
                             request.cont.resume(Unit)
 
-                            println("--------------finished request")
+                            println("--------------finished request startTime was $startTime")
 
                         }
 
