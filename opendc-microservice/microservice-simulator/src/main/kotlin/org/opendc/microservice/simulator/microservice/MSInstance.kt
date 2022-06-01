@@ -187,32 +187,7 @@ public class MSInstance(private val msId: UUID,
 
                         workload.invoke()
 
-                        // commPolicy.communicate(sync)
-                        // load balancer. instance. totalload + exe time
-
-                        // delay(request.exeTime)
-
-                        println("checking comm")
-
-                        var innerJob: Job? = null
-
-                        if(request.request.isNext()){
-
-                            println("comm invoke")
-
-                            innerJob = launch{
-
-                                simState.invoke(request.request)
-
-                            }
-
-                        }
-
-                        delay(request.exeTime)
-
-                        println("delay done joining " +clock.millis())
-
-                        innerJob?.join()
+                        communicate(request, this)
 
                         println(" ${clock.millis()} Finished invoke at coroutine ${Thread.currentThread().name} on instance ${getId()}")
 
@@ -238,6 +213,36 @@ public class MSInstance(private val msId: UUID,
 
 
         }
+
+    }
+
+
+    private suspend fun communicate(request: InvocationRequest, scope: CoroutineScope){
+
+        var commJob: Job? = null
+
+        if(request.request.isNext()){
+
+            println("Communicating with MS...")
+
+            commJob = scope.launch {
+
+                simState.invoke(request.request)
+
+            }
+
+        }
+        else{
+
+            println("No next MS to communicate")
+
+        }
+
+        delay(request.exeTime)
+
+        println("Waiting for communication to respond " +clock.millis())
+
+        commJob?.join()
 
     }
 
