@@ -1,14 +1,13 @@
 package org.opendc.microservice.simulator.state
 
-import io.opentelemetry.api.metrics.Meter
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import org.opendc.microservice.simulator.execution.ExeDelay
 import org.opendc.microservice.simulator.execution.InterArrivalDelay
 import org.opendc.microservice.simulator.loadBalancer.LoadBalancer
-import org.opendc.microservice.simulator.router.PoissonArrival
 import org.opendc.microservice.simulator.mapping.RoutingPolicy
 import org.opendc.microservice.simulator.microservice.*
+import org.opendc.microservice.simulator.router.Request
 import org.opendc.microservice.simulator.workload.MSWorkloadMapper
 import org.opendc.simulator.compute.model.MachineModel
 import java.time.Clock
@@ -117,8 +116,10 @@ public class SimulatorState
 
                             val startTime = clock.millis()
 
-                            loadBalancer.instance(request.ms, registryManager.getInstances())
-                                .invoke(exeTime)
+                            request.requestOrder.next()?.let {
+                                loadBalancer.instance(it, registryManager.getInstances())
+                                    .invoke(exeTime, request.requestOrder)
+                            }
 
                             request.cont.resume(Unit)
 
@@ -155,7 +156,7 @@ public class SimulatorState
      */
     suspend public fun run(){
 
-        var callMS: List<Microservice>
+        var requests: List<Request>
 
         var exeTime: Long
 
@@ -169,21 +170,21 @@ public class SimulatorState
 
                 exeTime = exePolicy.time()
 
-                callMS = routingPolicy.call(microservices)
+                requests = routingPolicy.invokeOrder(microservices)
 
-                println("Request received at time ${clock.millis()} for ${callMS.size} microservices")
+                println("Time ${clock.millis()} recieved ${requests.size} requests")
 
                 nextReqDelay = interArrivalDelay.time()
 
                 // invoke loop
 
-                for (ms in callMS) {
+                for (request in requests) {
 
                     totalInvocations += 1
 
                     launch{
 
-                        invoke(ms)
+                        invoke(request)
 
                     }
 
@@ -211,15 +212,15 @@ public class SimulatorState
     }
 
 
-    private data class MSRequest(val cont: Continuation<Unit>, val ms: Microservice)
+    private data class MSRequest(val cont: Continuation<Unit>, val requestOrder: Request)
 
 
-    suspend public fun invoke(ms: Microservice){
+    suspend public fun invoke(request: Request){
 
-        println(" ${clock.millis()}  Invoke request for MS ${ms.getId()}")
+        println("In request Total MS "+request.getReqInvocations().size+ " current is " + request.getCurrentMS())
 
         return suspendCancellableCoroutine { cont ->
-            queue.add(MSRequest(cont, ms))
+            queue.add(MSRequest(cont, request))
             chan.trySend(Unit)
         }
 

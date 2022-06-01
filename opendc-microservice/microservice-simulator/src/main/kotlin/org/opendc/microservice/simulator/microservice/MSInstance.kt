@@ -3,6 +3,7 @@ package org.opendc.microservice.simulator.microservice
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics
+import org.opendc.microservice.simulator.router.Request
 import org.opendc.microservice.simulator.state.RegistryManager
 import org.opendc.microservice.simulator.state.SimulatorState
 import org.opendc.microservice.simulator.workload.MSWorkloadMapper
@@ -189,7 +190,29 @@ public class MSInstance(private val msId: UUID,
                         // commPolicy.communicate(sync)
                         // load balancer. instance. totalload + exe time
 
+                        // delay(request.exeTime)
+
+                        println("checking comm")
+
+                        var innerJob: Job? = null
+
+                        if(request.request.isNext()){
+
+                            println("comm invoke")
+
+                            innerJob = launch{
+
+                                simState.invoke(request.request)
+
+                            }
+
+                        }
+
                         delay(request.exeTime)
+
+                        println("delay done joining " +clock.millis())
+
+                        innerJob?.join()
 
                         println(" ${clock.millis()} Finished invoke at coroutine ${Thread.currentThread().name} on instance ${getId()}")
 
@@ -223,7 +246,7 @@ public class MSInstance(private val msId: UUID,
      * run request on instance.
      * if not active, make it active.
      */
-    suspend public fun invoke(exeTime: Long){
+    suspend public fun invoke(exeTime: Long, request: Request){
 
         println(" ${clock.millis()} Queuing Invoke request for instance "+ getId() +" with exeTime $exeTime")
 
@@ -234,7 +257,7 @@ public class MSInstance(private val msId: UUID,
         slowDown.addValue(waitTime+exeTime/exeTime)
 
         return suspendCancellableCoroutine { cont ->
-            queue.add(InvocationRequest(cont, exeTime))
+            queue.add(InvocationRequest(cont, exeTime, request))
             chan.trySend(Unit)
         }
 
@@ -265,6 +288,6 @@ public class MSInstance(private val msId: UUID,
     /**
      * A ms invocation request.
      */
-    private data class InvocationRequest(val cont: Continuation<Unit>, val exeTime: Long)
+    private data class InvocationRequest(val cont: Continuation<Unit>, val exeTime: Long, val request: Request)
 
 }

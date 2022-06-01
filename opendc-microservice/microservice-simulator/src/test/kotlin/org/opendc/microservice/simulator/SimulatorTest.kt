@@ -66,8 +66,8 @@ internal class SimulatorTest {
             }
         }
 
-        val state = SimulatorState(msConfig, ProbRouting(listOf(0.2,0.8),2), RoundRobinLoadBalancer(),
-            LogNormalExe(6.0), clock, this, machineModel, mapper, 10000, PoissonDelay(200.0))
+        val state = SimulatorState(msConfig, RandomRouting(1), RoundRobinLoadBalancer(),
+            LogNormalExe(6.0), clock, this, machineModel, mapper, 10000, PoissonDelay(1000.0))
 
         state.run()
 
