@@ -25,7 +25,7 @@ import kotlin.coroutines.resumeWithException
 * Microservice instance has an id.
 * The clock, scope, model are used to config the machine to run the instance on.
  */
-public class MSInstance(private val msId: UUID,
+public class MSInstance(private val ms: Microservice,
                         private val id: UUID,
                         private val simState: SimulatorState,
                         private val clock: Clock,
@@ -88,7 +88,7 @@ public class MSInstance(private val msId: UUID,
 
     public fun getMSId(): UUID {
 
-        return msId
+        return ms.getId()
 
     }
 
@@ -230,7 +230,7 @@ public class MSInstance(private val msId: UUID,
 
         if(hopsDone < simState.getDepth()) {
 
-            val callMS = commPolicy.communicateMs(msId, hopsDone, registryManager.getMicroservices())
+            val callMS = commPolicy.communicateMs(ms, hopsDone, registryManager.getMicroservices())
 
             println("${clock.millis()} communicating with ${callMS.size} ms")
 

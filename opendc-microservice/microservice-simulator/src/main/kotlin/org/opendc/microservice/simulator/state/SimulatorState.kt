@@ -85,7 +85,7 @@ public class SimulatorState
 
             for(instanceId in config.getInstanceIds()){
 
-                deployer.deploy(ms.getId(), instanceId, this, clock, scope, model, registryManager, mapper)
+                deployer.deploy(ms, instanceId, this, clock, scope, model, registryManager, mapper)
 
             }
 

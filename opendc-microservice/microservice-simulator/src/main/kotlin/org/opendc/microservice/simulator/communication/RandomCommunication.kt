@@ -6,7 +6,7 @@ import kotlin.random.Random
 
 public class RandomCommunication(private val nrOfMS: Int): CommunicationPolicy {
 
-    override fun communicateMs(msID: UUID, hopsDone: Int, microservices: MutableList<Microservice>): List<Microservice> {
+    override fun communicateMs(ms: Microservice, hopsDone: Int, microservices: MutableList<Microservice>): List<Microservice> {
 
         val callMS = mutableListOf<Microservice>()
 
