@@ -3,7 +3,9 @@ package org.opendc.microservice.simulator.microservice
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics
+import org.opendc.microservice.simulator.mapping.RoutingPolicy
 import org.opendc.microservice.simulator.router.Request
+import org.opendc.microservice.simulator.router.RequestV2
 import org.opendc.microservice.simulator.state.RegistryManager
 import org.opendc.microservice.simulator.state.SimulatorState
 import org.opendc.microservice.simulator.workload.MSWorkloadMapper
@@ -66,6 +68,9 @@ public class MSInstance(private val msId: UUID,
     private val queueTime = DescriptiveStatistics().apply{ windowSize = 100 }
 
     private val slowDown = DescriptiveStatistics().apply{ windowSize = 100 }
+
+    private val commPolicy = simState.getCommPolicy()
+
 
     init{
 
@@ -187,7 +192,9 @@ public class MSInstance(private val msId: UUID,
 
                         workload.invoke()
 
-                        communicate(request, this)
+                        delay(request.exeTime)
+
+                        communicate(this, request.request)
 
                         println(" ${clock.millis()} Finished invoke at coroutine ${Thread.currentThread().name} on instance ${getId()}")
 
@@ -217,41 +224,38 @@ public class MSInstance(private val msId: UUID,
     }
 
 
-    private suspend fun communicate(request: InvocationRequest, scope: CoroutineScope){
+    suspend private fun communicate(scope: CoroutineScope, prevRequest: RequestV2){
 
-        var commJob: Job? = null
+        val hopsDone = prevRequest.getHops()
 
-        if(request.request.isNext()){
+        if(hopsDone < simState.getDepth()) {
 
-            println("Communicating with MS...")
+            val callMS = commPolicy.communicateMs(msId, hopsDone, registryManager.getMicroservices())
 
-            commJob = scope.launch {
+            println("${clock.millis()} communicating with ${callMS.size} ms")
 
-                simState.invoke(request.request)
+            for (microservice in callMS) {
+
+                scope.launch {
+
+                    val nextHop = hopsDone + 1
+
+                    simState.invoke(RequestV2(microservice, nextHop))
+
+                }
 
             }
-
         }
-        else{
-
-            println("No next MS to communicate")
-
-        }
-
-        delay(request.exeTime)
-
-        println("Waiting for communication to respond " +clock.millis())
-
-        commJob?.join()
 
     }
+
 
 
     /**
      * run request on instance.
      * if not active, make it active.
      */
-    suspend public fun invoke(exeTime: Long, request: Request){
+    suspend public fun invoke(exeTime: Long, request: RequestV2){
 
         println(" ${clock.millis()} Queuing Invoke request for instance "+ getId() +" with exeTime $exeTime")
 
@@ -293,6 +297,6 @@ public class MSInstance(private val msId: UUID,
     /**
      * A ms invocation request.
      */
-    private data class InvocationRequest(val cont: Continuation<Unit>, val exeTime: Long, val request: Request)
+    private data class InvocationRequest(val cont: Continuation<Unit>, val exeTime: Long, val request: RequestV2)
 
 }

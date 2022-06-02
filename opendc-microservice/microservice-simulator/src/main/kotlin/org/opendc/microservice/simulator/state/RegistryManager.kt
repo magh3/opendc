@@ -2,10 +2,14 @@ package org.opendc.microservice.simulator.state
 
 import org.opendc.microservice.simulator.microservice.MSInstance
 import org.opendc.microservice.simulator.microservice.Microservice
+import java.util.*
 
-public class RegistryManager {
+public class RegistryManager(){
+
+    private val microservices: MutableList<Microservice> = mutableListOf()
 
     private val registry = mutableSetOf<MSInstance>()
+
 
     public fun registerInstance(msInstance: MSInstance){
 
@@ -24,6 +28,31 @@ public class RegistryManager {
     public fun getInstances(): MutableSet<MSInstance> {
 
         return registry
+
+    }
+
+    public fun getMicroservices(): MutableList<Microservice> {
+
+        return microservices
+
+    }
+
+    public fun addMs(ms: Microservice){
+
+        microservices.add(ms)
+
+    }
+
+
+    public fun msFromID(msId: UUID): Microservice? {
+
+        for(ms in microservices){
+
+            if(ms.getId() == msId) return ms
+
+        }
+
+        return null
 
     }
 

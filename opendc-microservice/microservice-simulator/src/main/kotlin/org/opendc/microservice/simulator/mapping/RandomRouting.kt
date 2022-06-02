@@ -2,6 +2,7 @@ package org.opendc.microservice.simulator.mapping
 
 import org.opendc.microservice.simulator.microservice.Microservice
 import org.opendc.microservice.simulator.router.Request
+import org.opendc.microservice.simulator.router.RequestV2
 import kotlin.random.Random
 
 /**
@@ -13,7 +14,7 @@ public class RandomRouting(private val nrOfMS: Int): RoutingPolicy {
 
         val callMS = mutableListOf<Microservice>()
 
-        for(i in 1..2){
+        for(i in 1..nrOfMS){
 
             callMS.add(getRandomMS(microservices))
 
@@ -35,6 +36,20 @@ public class RandomRouting(private val nrOfMS: Int): RoutingPolicy {
         }
 
         return invokeRequests
+    }
+
+    override fun callV2(microservices: MutableList<Microservice>): List<RequestV2> {
+
+        val callMS = mutableListOf<RequestV2>()
+
+        for(i in 1..nrOfMS){
+
+            callMS.add(RequestV2(getRandomMS(microservices), 0) )
+
+        }
+
+        return callMS
+
     }
 
 

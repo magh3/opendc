@@ -2,12 +2,14 @@ package org.opendc.microservice.simulator.state
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
+import org.opendc.microservice.simulator.communication.CommunicationPolicy
 import org.opendc.microservice.simulator.execution.ExeDelay
 import org.opendc.microservice.simulator.execution.InterArrivalDelay
 import org.opendc.microservice.simulator.loadBalancer.LoadBalancer
 import org.opendc.microservice.simulator.mapping.RoutingPolicy
 import org.opendc.microservice.simulator.microservice.*
 import org.opendc.microservice.simulator.router.Request
+import org.opendc.microservice.simulator.router.RequestV2
 import org.opendc.microservice.simulator.workload.MSWorkloadMapper
 import org.opendc.simulator.compute.model.MachineModel
 import java.time.Clock
@@ -22,6 +24,7 @@ public class SimulatorState
      private val routingPolicy: RoutingPolicy,
      private val loadBalancer: LoadBalancer,
      private val exePolicy: ExeDelay,
+     private val commPolicy: CommunicationPolicy,
      private val clock: Clock,
      private val scope: CoroutineScope,
      private val model: MachineModel,
@@ -37,7 +40,7 @@ public class SimulatorState
      */
     private val registryManager = RegistryManager()
 
-    private val microservices = initializeMS()
+    private val depth = 2
 
 
     /**
@@ -56,6 +59,8 @@ public class SimulatorState
 
     init{
 
+        initializeMS()
+
         listen()
 
     }
@@ -64,9 +69,7 @@ public class SimulatorState
      * make ms.
      * make ms instances.
      */
-    private fun initializeMS(): MutableList<Microservice> {
-
-        val msList = mutableListOf<Microservice>()
+    private fun initializeMS() {
 
         var ms: Microservice
 
@@ -76,7 +79,7 @@ public class SimulatorState
 
             ms = Microservice((config.getId()))
 
-            msList.add(ms)
+            registryManager.addMs(ms)
 
             // deploy instances
 
@@ -88,9 +91,15 @@ public class SimulatorState
 
         }
 
-        return msList
+    }
+
+
+    public fun getDepth(): Int {
+
+        return depth
 
     }
+
 
     /**
      * listens to incoming requests
@@ -116,10 +125,9 @@ public class SimulatorState
 
                             val startTime = clock.millis()
 
-                            request.requestOrder.next()?.let {
-                                loadBalancer.instance(it, registryManager.getInstances())
-                                    .invoke(exeTime, request.requestOrder)
-                            }
+                            loadBalancer.instance(request.request.ms(), registryManager.getInstances()).
+                            invoke(exeTime, request.request)
+
 
                             request.cont.resume(Unit)
 
@@ -156,7 +164,7 @@ public class SimulatorState
      */
     suspend public fun run(){
 
-        var requests: List<Request>
+        var requests: List<RequestV2>
 
         var exeTime: Long
 
@@ -170,7 +178,7 @@ public class SimulatorState
 
                 exeTime = exePolicy.time()
 
-                requests = routingPolicy.invokeOrder(microservices)
+                requests = routingPolicy.callV2(registryManager.getMicroservices())
 
                 println("Time ${clock.millis()} recieved ${requests.size} requests")
 
@@ -212,17 +220,24 @@ public class SimulatorState
     }
 
 
-    private data class MSRequest(val cont: Continuation<Unit>, val requestOrder: Request)
+    private data class MSRequest(val cont: Continuation<Unit>, val request: RequestV2)
 
 
-    suspend public fun invoke(request: Request){
+    suspend public fun invoke(request: RequestV2){
 
-        println("In request Total MS "+request.getReqInvocations().size+ " current is " + request.getCurrentMS())
+        println("Current request hop is " + request.getHops())
 
         return suspendCancellableCoroutine { cont ->
             queue.add(MSRequest(cont, request))
             chan.trySend(Unit)
         }
+
+    }
+
+
+    public fun getCommPolicy(): CommunicationPolicy {
+
+        return commPolicy
 
     }
 

@@ -2,6 +2,7 @@ package org.opendc.microservice.simulator.mapping
 
 import org.opendc.microservice.simulator.microservice.Microservice
 import org.opendc.microservice.simulator.router.Request
+import org.opendc.microservice.simulator.router.RequestV2
 import kotlin.random.Random
 
 /**
@@ -46,6 +47,10 @@ public class ProbRouting(private val callProb: List<Double>, private val nrOfMS:
     }
 
     override fun invokeOrder(microservices: MutableList<Microservice>): List<Request> {
+        TODO("Not yet implemented")
+    }
+
+    override fun callV2(microservices: MutableList<Microservice>): List<RequestV2> {
         TODO("Not yet implemented")
     }
 

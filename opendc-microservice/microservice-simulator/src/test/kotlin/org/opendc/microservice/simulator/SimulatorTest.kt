@@ -15,6 +15,7 @@ import org.opendc.compute.workload.telemetry.SdkTelemetryManager
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import kotlinx.coroutines.delay
 import org.opendc.compute.workload.topology.HostSpec
+import org.opendc.microservice.simulator.communication.RandomCommunication
 import org.opendc.microservice.simulator.execution.LogNormalExe
 import org.opendc.microservice.simulator.execution.PoissonDelay
 import org.opendc.microservice.simulator.loadBalancer.*
@@ -67,7 +68,8 @@ internal class SimulatorTest {
         }
 
         val state = SimulatorState(msConfig, RandomRouting(1), RoundRobinLoadBalancer(),
-            LogNormalExe(6.0), clock, this, machineModel, mapper, 10000, PoissonDelay(1000.0))
+            LogNormalExe(6.0), RandomCommunication(2) ,clock, this, machineModel,
+            mapper, 10000, PoissonDelay(1000.0))
 
         state.run()
 
