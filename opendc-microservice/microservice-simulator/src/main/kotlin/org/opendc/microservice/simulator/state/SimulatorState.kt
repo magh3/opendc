@@ -186,15 +186,25 @@ public class SimulatorState
 
                 // invoke loop
 
-                for (request in requests) {
+                launch {
 
-                    totalInvocations += 1
+                    val requestJobs = mutableListOf<Job>()
 
-                    launch{
+                    for (request in requests) {
 
-                        invoke(request)
+                        totalInvocations += 1
+
+                        requestJobs.add(launch {
+
+                            invoke(request)
+
+                        })
 
                     }
+
+                    requestJobs.joinAll()
+
+                    println("${clock.millis()} Request completed")
 
                 }
 

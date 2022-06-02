@@ -188,29 +188,18 @@ public class MSInstance(private val ms: Microservice,
 
                     exeTime.addValue(request.exeTime.toDouble())
 
-                    try {
+                    workload.invoke()
 
-                        workload.invoke()
+                    delay(request.exeTime)
 
-                        delay(request.exeTime)
-
+                    launch {
                         communicate(this, request.request)
-
-                        println(" ${clock.millis()} Finished invoke at coroutine ${Thread.currentThread().name} on instance ${getId()}")
-
-                        request.cont.resume(Unit)
-
-                    } catch (cause: CancellationException) {
-
-                        request.cont.resumeWithException(cause)
-
-                        throw cause
-
-                    } catch (cause: Throwable) {
-
-                        request.cont.resumeWithException(cause)
-
                     }
+                    println(" ${clock.millis()} Finished invoke at coroutine ${Thread.currentThread().name} on instance ${getId()}")
+
+                    // request.cont.resume(Unit)
+
+
 
                 }
 
@@ -224,11 +213,13 @@ public class MSInstance(private val ms: Microservice,
     }
 
 
-    suspend private fun communicate(scope: CoroutineScope, prevRequest: RequestV2){
+    suspend private fun communicate(scope: CoroutineScope, prevRequest: RequestV2) {
 
         val hopsDone = prevRequest.getHops()
 
-        if(hopsDone < simState.getDepth()) {
+        // check depth. if depth reached no communicate
+
+        if (hopsDone < simState.getDepth()) {
 
             var callMS = commPolicy.communicateMs(ms, hopsDone, registryManager.getMicroservices()).toMutableList()
 
@@ -240,23 +231,84 @@ public class MSInstance(private val ms: Microservice,
 
             callMS.remove(ms)
 
-            println(callMS)
+            println("${clock.millis()} instance ${getId()} communicating with ${callMS.size} ms ${callMS}")
 
-            println("${clock.millis()} communicating with ${callMS.size} ms")
+            if (callMS.size == 0) {
+
+                // println("no communication")
+
+                try {
+                    prevRequest.getCont().resume(Unit)
+
+                } catch (cause: CancellationException) {
+
+                    prevRequest.getCont().resumeWithException(cause)
+
+                    throw cause
+
+                } catch (cause: Throwable) {
+
+                    prevRequest.getCont().resumeWithException(cause)
+
+                }
+
+                return
+
+            }
+
+            val allJobs = mutableListOf<Job>()
 
             for (microservice in callMS) {
 
-                scope.launch {
+                allJobs.add(scope.launch {
 
                     val nextHop = hopsDone + 1
 
                     simState.invoke(RequestV2(microservice, nextHop))
 
+                })
+
+                // track launch and resume only on done these
+
+                allJobs.joinAll()
+
+                try {
+                    prevRequest.getCont().resume(Unit)
+
+                } catch (cause: CancellationException) {
+
+                    prevRequest.getCont().resumeWithException(cause)
+
+                    throw cause
+
+                } catch (cause: Throwable) {
+
+                    prevRequest.getCont().resumeWithException(cause)
+
                 }
 
             }
-        }
 
+
+        } else {
+
+            try {
+                prevRequest.getCont().resume(Unit)
+
+            } catch (cause: CancellationException) {
+
+                prevRequest.getCont().resumeWithException(cause)
+
+                throw cause
+
+            } catch (cause: Throwable) {
+
+                prevRequest.getCont().resumeWithException(cause)
+
+            }
+
+
+        }
     }
 
 
@@ -276,6 +328,7 @@ public class MSInstance(private val ms: Microservice,
         slowDown.addValue(waitTime+exeTime/exeTime)
 
         return suspendCancellableCoroutine { cont ->
+            request.setCont(cont)
             queue.add(InvocationRequest(cont, exeTime, request))
             chan.trySend(Unit)
         }
