@@ -14,5 +14,10 @@ public class Microservice(private val id: UUID){
 
     override fun hashCode(): Int = id.hashCode()
 
+    override fun toString(): String {
+
+        return id.toString()
+
+    }
 
 }

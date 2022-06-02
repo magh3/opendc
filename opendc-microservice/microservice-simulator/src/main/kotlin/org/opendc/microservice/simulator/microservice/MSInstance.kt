@@ -230,7 +230,17 @@ public class MSInstance(private val ms: Microservice,
 
         if(hopsDone < simState.getDepth()) {
 
-            val callMS = commPolicy.communicateMs(ms, hopsDone, registryManager.getMicroservices())
+            var callMS = commPolicy.communicateMs(ms, hopsDone, registryManager.getMicroservices()).toMutableList()
+
+            // no duplicates
+
+            callMS = callMS.distinct().toMutableList()
+
+            // should not contain self
+
+            callMS.remove(ms)
+
+            println(callMS)
 
             println("${clock.millis()} communicating with ${callMS.size} ms")
 

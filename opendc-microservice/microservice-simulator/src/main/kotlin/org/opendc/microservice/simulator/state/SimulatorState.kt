@@ -225,7 +225,7 @@ public class SimulatorState
 
     suspend public fun invoke(request: RequestV2){
 
-        println("Current request hop is " + request.getHops())
+        println("Current request for ms ${request.ms()}, hop is " + request.getHops())
 
         return suspendCancellableCoroutine { cont ->
             queue.add(MSRequest(cont, request))
