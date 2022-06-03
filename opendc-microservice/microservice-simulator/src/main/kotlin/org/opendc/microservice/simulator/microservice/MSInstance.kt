@@ -3,9 +3,7 @@ package org.opendc.microservice.simulator.microservice
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics
-import org.opendc.microservice.simulator.mapping.RoutingPolicy
 import org.opendc.microservice.simulator.router.Request
-import org.opendc.microservice.simulator.router.RequestV2
 import org.opendc.microservice.simulator.state.RegistryManager
 import org.opendc.microservice.simulator.state.SimulatorState
 import org.opendc.microservice.simulator.workload.MSWorkloadMapper
@@ -213,7 +211,7 @@ public class MSInstance(private val ms: Microservice,
     }
 
 
-    suspend private fun communicate(scope: CoroutineScope, prevRequest: RequestV2) {
+    suspend private fun communicate(scope: CoroutineScope, prevRequest: Request) {
 
         val hopsDone = prevRequest.getHops()
 
@@ -264,7 +262,7 @@ public class MSInstance(private val ms: Microservice,
 
                     val nextHop = hopsDone + 1
 
-                    simState.invoke(RequestV2(microservice, nextHop))
+                    simState.invoke(Request(microservice, nextHop))
 
                 })
 
@@ -317,7 +315,7 @@ public class MSInstance(private val ms: Microservice,
      * run request on instance.
      * if not active, make it active.
      */
-    suspend public fun invoke(exeTime: Long, request: RequestV2){
+    suspend public fun invoke(exeTime: Long, request: Request){
 
         println(" ${clock.millis()} Queuing Invoke request for instance "+ getId() +" with exeTime $exeTime")
 
@@ -360,6 +358,6 @@ public class MSInstance(private val ms: Microservice,
     /**
      * A ms invocation request.
      */
-    private data class InvocationRequest(val cont: Continuation<Unit>, val exeTime: Long, val request: RequestV2)
+    private data class InvocationRequest(val cont: Continuation<Unit>, val exeTime: Long, val request: Request)
 
 }

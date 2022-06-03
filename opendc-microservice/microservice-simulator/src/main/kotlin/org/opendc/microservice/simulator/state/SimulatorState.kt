@@ -9,7 +9,6 @@ import org.opendc.microservice.simulator.loadBalancer.LoadBalancer
 import org.opendc.microservice.simulator.mapping.RoutingPolicy
 import org.opendc.microservice.simulator.microservice.*
 import org.opendc.microservice.simulator.router.Request
-import org.opendc.microservice.simulator.router.RequestV2
 import org.opendc.microservice.simulator.workload.MSWorkloadMapper
 import org.opendc.simulator.compute.model.MachineModel
 import java.time.Clock
@@ -102,7 +101,7 @@ public class SimulatorState
 
 
     /**
-     * listens to incoming requests
+     * Router that listens to incoming requests
      */
     private fun listen(){
 
@@ -115,7 +114,7 @@ public class SimulatorState
 
                 while (queue.isNotEmpty()) {
 
-                    val request = queue.poll()
+                    val queueEntry = queue.poll()
 
                     val exeTime = exePolicy.time()
 
@@ -125,25 +124,26 @@ public class SimulatorState
 
                             val startTime = clock.millis()
 
-                            loadBalancer.instance(request.request.ms(), registryManager.getInstances()).
-                            invoke(exeTime, request.request)
+                            loadBalancer.instance(queueEntry.request.ms(), registryManager.getInstances()).
+                            invoke(exeTime, queueEntry.request)
 
+                            // resumes when above instance invoke finishes
 
-                            request.cont.resume(Unit)
+                            queueEntry.cont.resume(Unit)
 
-                            println("--------------finished request startTime was $startTime")
+                            println("--------------finished instance invoke startTime was $startTime")
 
                         }
 
                     } catch (cause: CancellationException) {
 
-                        request.cont.resumeWithException(cause)
+                        queueEntry.cont.resumeWithException(cause)
 
                         throw cause
 
                     } catch (cause: Throwable) {
 
-                        request.cont.resumeWithException(cause)
+                        queueEntry.cont.resumeWithException(cause)
 
                     }
 
@@ -164,9 +164,9 @@ public class SimulatorState
      */
     suspend public fun run(){
 
-        var requests: List<RequestV2>
+        var callMS: List<Microservice>
 
-        var exeTime: Long
+        var requests: List<Request>
 
         var nextReqDelay: Long
 
@@ -176,11 +176,15 @@ public class SimulatorState
 
             while (clock.millis() < lastReqTime) {
 
-                exeTime = exePolicy.time()
+                // get list of microservices
 
-                requests = routingPolicy.callV2(registryManager.getMicroservices())
+                callMS = routingPolicy.call(registryManager.getMicroservices())
 
-                println("Time ${clock.millis()} recieved ${requests.size} requests")
+                // convert list of microservices to list of requests
+
+                requests = msToRequests(callMS)
+
+                println("Time ${clock.millis()} received request for ${requests.size} microservices")
 
                 nextReqDelay = interArrivalDelay.time()
 
@@ -230,10 +234,25 @@ public class SimulatorState
     }
 
 
-    private data class MSRequest(val cont: Continuation<Unit>, val request: RequestV2)
+    private fun msToRequests(microservices: List<Microservice>): List<Request> {
+
+        val requests = mutableListOf<Request>()
+
+        for(ms in microservices){
+
+            requests.add(Request(ms, 0))
+
+        }
+
+        return requests.toList()
+
+    }
 
 
-    suspend public fun invoke(request: RequestV2){
+    private data class MSRequest(val cont: Continuation<Unit>, val request: Request)
+
+
+    suspend public fun invoke(request: Request){
 
         println("Current request for ms ${request.ms()}, hop is " + request.getHops())
 
