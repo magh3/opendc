@@ -16,7 +16,6 @@ import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.flow.FlowEngine
 import java.time.Clock
 import java.util.*
-import java.util.logging.Logger
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -216,9 +215,9 @@ public class MSInstance(private val ms: Microservice,
     }
 
 
-    suspend private fun communicate(scope: CoroutineScope, prevRequest: Request) {
+    suspend private fun communicate(scope: CoroutineScope, currentRequest: Request) {
 
-        val hopsDone = prevRequest.getHops()
+        val hopsDone = currentRequest.getHops()
 
         // check depth. if depth reached no communicate
 
@@ -238,20 +237,9 @@ public class MSInstance(private val ms: Microservice,
 
             if (callMS.size == 0) {
 
-                try {
-                    prevRequest.getCont().resume(Unit)
+                // no communication. Finish this request coroutine
 
-                } catch (cause: CancellationException) {
-
-                    prevRequest.getCont().resumeWithException(cause)
-
-                    throw cause
-
-                } catch (cause: Throwable) {
-
-                    prevRequest.getCont().resumeWithException(cause)
-
-                }
+                resumeCoroutine(currentRequest.getCont())
 
                 return
 
@@ -269,49 +257,41 @@ public class MSInstance(private val ms: Microservice,
 
                 })
 
-                // track launch and resume only on done these
-
-                allJobs.joinAll()
-
-                try {
-                    prevRequest.getCont().resume(Unit)
-
-                } catch (cause: CancellationException) {
-
-                    prevRequest.getCont().resumeWithException(cause)
-
-                    throw cause
-
-                } catch (cause: Throwable) {
-
-                    prevRequest.getCont().resumeWithException(cause)
-
-                }
-
             }
+
+            // track launch and resume only on done these
+
+            allJobs.joinAll()
+
+            resumeCoroutine(currentRequest.getCont())
 
 
         } else {
 
-            try {
-                prevRequest.getCont().resume(Unit)
-
-            } catch (cause: CancellationException) {
-
-                prevRequest.getCont().resumeWithException(cause)
-
-                throw cause
-
-            } catch (cause: Throwable) {
-
-                prevRequest.getCont().resumeWithException(cause)
-
-            }
-
+            resumeCoroutine(currentRequest.getCont())
 
         }
     }
 
+
+    private fun resumeCoroutine(cont: Continuation<Unit>){
+
+        try {
+            cont.resume(Unit)
+
+        } catch (cause: CancellationException) {
+
+            cont.resumeWithException(cause)
+
+            throw cause
+
+        } catch (cause: Throwable) {
+
+            cont.resumeWithException(cause)
+
+        }
+
+    }
 
 
     /**
@@ -320,7 +300,7 @@ public class MSInstance(private val ms: Microservice,
      */
     suspend public fun invoke(exeTime: Long, request: Request){
 
-        logger.info{" ${clock.millis()} Queuing Invoke request for instance "+ getId() +" with exeTime $exeTime"}
+        logger.debug{" ${clock.millis()} Queuing Invoke request for instance "+ getId() +" with exeTime $exeTime"}
 
         val waitTime = queueLoad().toDouble()
 
