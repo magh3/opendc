@@ -2,6 +2,7 @@ package org.opendc.microservice.simulator.state
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
+import mu.KotlinLogging
 import org.opendc.microservice.simulator.communication.CommunicationPolicy
 import org.opendc.microservice.simulator.execution.ExeDelay
 import org.opendc.microservice.simulator.execution.InterArrivalDelay
@@ -55,6 +56,8 @@ public class SimulatorState
      * A channel used to signal that new invocations have been enqueued.
      */
     private val chan = Channel<Unit>(Channel.RENDEZVOUS)
+
+    private val logger = KotlinLogging.logger {}
 
     init{
 
@@ -131,7 +134,7 @@ public class SimulatorState
 
                             queueEntry.cont.resume(Unit)
 
-                            println("--------------finished instance invoke startTime was $startTime")
+                            logger.info{"--------------finished instance invoke startTime was $startTime"}
 
                         }
 
@@ -184,7 +187,7 @@ public class SimulatorState
 
                 requests = msToRequests(callMS)
 
-                println("Time ${clock.millis()} received request for ${requests.size} microservices")
+                logger.info{"Time ${clock.millis()} received request for ${requests.size} microservices"}
 
                 nextReqDelay = interArrivalDelay.time()
 
@@ -208,7 +211,7 @@ public class SimulatorState
 
                     requestJobs.joinAll()
 
-                    println("${clock.millis()} Request completed")
+                    logger.info{"${clock.millis()} Request completed"}
 
                 }
 
@@ -254,7 +257,7 @@ public class SimulatorState
 
     suspend public fun invoke(request: Request){
 
-        println("Current request for ms ${request.ms()}, hop is " + request.getHops())
+        logger.info{"Current request for ms ${request.ms()}, hop is " + request.getHops()}
 
         return suspendCancellableCoroutine { cont ->
             queue.add(MSRequest(cont, request))

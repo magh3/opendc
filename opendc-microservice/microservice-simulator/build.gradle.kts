@@ -41,6 +41,6 @@ dependencies {
     implementation(libs.kotlin.logging)
 
     testImplementation(projects.opendcSimulator.opendcSimulatorCore)
-    testRuntimeOnly(libs.slf4j.simple)
-
+    testRuntimeOnly(libs.slf4j.simple)  // comment this to turn off logger
+    // testImplementation(libs.log4j.slf4j)
 }

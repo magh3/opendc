@@ -2,6 +2,7 @@ package org.opendc.microservice.simulator.microservice
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
+import mu.KotlinLogging
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics
 import org.opendc.microservice.simulator.router.Request
 import org.opendc.microservice.simulator.state.RegistryManager
@@ -15,6 +16,7 @@ import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.flow.FlowEngine
 import java.time.Clock
 import java.util.*
+import java.util.logging.Logger
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -69,6 +71,10 @@ public class MSInstance(private val ms: Microservice,
 
     private val commPolicy = simState.getCommPolicy()
 
+    /**
+     * The logger instance of this instance.
+     */
+    private val logger = KotlinLogging.logger {}
 
     init{
 
@@ -109,7 +115,7 @@ public class MSInstance(private val ms: Microservice,
 
         load += queueLoad()
 
-        println("Queued load for instance ${getId()} is $load")
+        logger.info {"Queued load for instance ${getId()} is $load"}
 
         return load
 
@@ -142,7 +148,7 @@ public class MSInstance(private val ms: Microservice,
 
         else connections = queue.size
 
-        println("Connections for instance ${getId()} is $connections")
+        logger.info{"Connections for instance ${getId()} is $connections"}
 
         return connections
 
@@ -176,13 +182,13 @@ public class MSInstance(private val ms: Microservice,
 
                     state = InstanceState.Active
 
-                    println(" ${clock.millis()} Starting queued request at coroutine ${Thread.currentThread().name} on instance ${getId()}")
+                    logger.info{" ${clock.millis()} Starting queued request at coroutine ${Thread.currentThread().name} on instance ${getId()}"}
 
                     val request = queue.poll()
 
                     runningLoadEndTime = clock.millis() + request.exeTime
 
-                    println("exeTime of this request is ${request.exeTime}")
+                    logger.info{"exeTime of this request is ${request.exeTime}"}
 
                     exeTime.addValue(request.exeTime.toDouble())
 
@@ -191,13 +197,12 @@ public class MSInstance(private val ms: Microservice,
                     delay(request.exeTime)
 
                     launch {
+
                         communicate(this, request.request)
+
                     }
-                    println(" ${clock.millis()} Finished invoke at coroutine ${Thread.currentThread().name} on instance ${getId()}")
 
-                    // request.cont.resume(Unit)
-
-
+                    logger.info { " ${clock.millis()} Finished invoke at coroutine ${Thread.currentThread().name} on instance ${getId()}"}
 
                 }
 
@@ -229,11 +234,9 @@ public class MSInstance(private val ms: Microservice,
 
             callMS.remove(ms)
 
-            println("${clock.millis()} instance ${getId()} communicating with ${callMS.size} ms ${callMS}")
+            logger.info{"${clock.millis()} instance ${getId()} communicating with ${callMS.size} ms ${callMS}"}
 
             if (callMS.size == 0) {
-
-                // println("no communication")
 
                 try {
                     prevRequest.getCont().resume(Unit)
@@ -317,7 +320,7 @@ public class MSInstance(private val ms: Microservice,
      */
     suspend public fun invoke(exeTime: Long, request: Request){
 
-        println(" ${clock.millis()} Queuing Invoke request for instance "+ getId() +" with exeTime $exeTime")
+        logger.info{" ${clock.millis()} Queuing Invoke request for instance "+ getId() +" with exeTime $exeTime"}
 
         val waitTime = queueLoad().toDouble()
 

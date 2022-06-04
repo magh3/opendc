@@ -22,7 +22,7 @@ public class MSInstanceDeployer {
         msInstance.run()
 
         // logger.info { "Deployed instance with id $uid of microservice $msId" }
-        println("Deployed instance with id $uid of microservice ${ms.getId()}")
+        logger.info{"Deployed instance with id $uid of microservice ${ms.getId()}"}
 
         return msInstance
 

@@ -1,7 +1,6 @@
 package org.opendc.microservice.simulator
 
 import io.mockk.spyk
-import io.opentelemetry.api.metrics.MeterProvider
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.opendc.microservice.simulator.microservice.Microservice
@@ -51,6 +50,8 @@ internal class SimulatorTest {
 
     @Test
     fun runMiniSim() = runBlockingSimulation {
+
+        // System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "TRACE");
 
         val msConfig = mutableListOf<MSConfiguration>(
             MSConfiguration(UUID.randomUUID(), listOf(UUID.randomUUID())),
