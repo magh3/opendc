@@ -74,8 +74,6 @@ internal class SimulatorTest {
 
         state.run()
 
-        state.stop()
-
         assert(true)
 
     }

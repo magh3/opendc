@@ -114,7 +114,7 @@ public class MSInstance(private val ms: Microservice,
 
         load += queueLoad()
 
-        logger.info {"Queued load for instance ${getId()} is $load"}
+        logger.debug {"Queued load for instance ${getId()} is $load"}
 
         return load
 
@@ -147,7 +147,7 @@ public class MSInstance(private val ms: Microservice,
 
         else connections = queue.size
 
-        logger.info{"Connections for instance ${getId()} is $connections"}
+        logger.debug{"Connections for instance ${getId()} is $connections"}
 
         return connections
 
@@ -181,13 +181,13 @@ public class MSInstance(private val ms: Microservice,
 
                     state = InstanceState.Active
 
-                    logger.info{" ${clock.millis()} Starting queued request at coroutine ${Thread.currentThread().name} on instance ${getId()}"}
+                    logger.debug{" ${clock.millis()} Starting queued request at coroutine ${Thread.currentThread().name} on instance ${getId()}"}
 
                     val request = queue.poll()
 
                     runningLoadEndTime = clock.millis() + request.exeTime
 
-                    logger.info{"exeTime of this request is ${request.exeTime}"}
+                    logger.debug{"exeTime of this request is ${request.exeTime}"}
 
                     exeTime.addValue(request.exeTime.toDouble())
 
@@ -201,7 +201,7 @@ public class MSInstance(private val ms: Microservice,
 
                     }
 
-                    logger.info { " ${clock.millis()} Finished invoke at coroutine ${Thread.currentThread().name} on instance ${getId()}"}
+                    logger.debug { " ${clock.millis()} Finished invoke at coroutine ${Thread.currentThread().name} on instance ${getId()}"}
 
                 }
 
@@ -233,7 +233,7 @@ public class MSInstance(private val ms: Microservice,
 
             callMS.remove(ms)
 
-            logger.info{"${clock.millis()} instance ${getId()} communicating with ${callMS.size} ms ${callMS}"}
+            logger.debug{"${clock.millis()} instance ${getId()} communicating with ${callMS.size} ms ${callMS}"}
 
             if (callMS.size == 0) {
 

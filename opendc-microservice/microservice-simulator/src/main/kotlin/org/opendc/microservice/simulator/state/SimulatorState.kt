@@ -134,7 +134,7 @@ public class SimulatorState
 
                             queueEntry.cont.resume(Unit)
 
-                            logger.info{"--------------finished instance invoke startTime was $startTime"}
+                            logger.debug{"--------------finished instance invoke startTime was $startTime"}
 
                         }
 
@@ -187,7 +187,7 @@ public class SimulatorState
 
                 requests = msToRequests(callMS)
 
-                logger.info{"Time ${clock.millis()} received request for ${requests.size} microservices"}
+                logger.debug{"Time ${clock.millis()} received request for ${requests.size} microservices"}
 
                 nextReqDelay = interArrivalDelay.time()
 
@@ -211,7 +211,7 @@ public class SimulatorState
 
                     requestJobs.joinAll()
 
-                    logger.info{"${clock.millis()} Request completed"}
+                    logger.debug{"${clock.millis()} Request completed"}
 
                 }
 
@@ -220,6 +220,8 @@ public class SimulatorState
             }
 
         }
+
+        stop()
 
         val myCollection = registryManager.getInstances()
 
@@ -257,7 +259,7 @@ public class SimulatorState
 
     suspend public fun invoke(request: Request){
 
-        logger.info{"Current request for ms ${request.ms()}, hop is " + request.getHops()}
+        logger.debug{"Current request for ms ${request.ms()}, hop is " + request.getHops()}
 
         return suspendCancellableCoroutine { cont ->
             queue.add(MSRequest(cont, request))
