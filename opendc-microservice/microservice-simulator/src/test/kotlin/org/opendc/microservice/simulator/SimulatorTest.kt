@@ -51,8 +51,6 @@ internal class SimulatorTest {
     @Test
     fun runMiniSim() = runBlockingSimulation {
 
-        // System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "TRACE");
-
         val msConfig = mutableListOf<MSConfiguration>(
             MSConfiguration(UUID.randomUUID(), listOf(UUID.randomUUID())),
             MSConfiguration(UUID.randomUUID(), listOf(UUID.randomUUID(), UUID.randomUUID())) )
@@ -68,7 +66,7 @@ internal class SimulatorTest {
             }
         }
 
-        val state = SimulatorState(msConfig, RandomRouting(1), RoundRobinLoadBalancer(),
+        val state = SimulatorState(msConfig, RandomRouting(2), RoundRobinLoadBalancer(),
             LogNormalExe(6.0), RandomCommunication(2) ,clock, this, machineModel,
             mapper, 10000, PoissonDelay(1000.0))
 

@@ -171,6 +171,8 @@ public class MSInstance(private val ms: Microservice,
 
             }
 
+            val allJobs = mutableListOf<Job>()
+
             while (isActive) {
                 if (queue.isEmpty()) {
                     chan.receive()
@@ -195,11 +197,11 @@ public class MSInstance(private val ms: Microservice,
 
                     delay(request.exeTime)
 
-                    launch {
+                    allJobs.add(launch {
 
                         communicate(this, request.request)
 
-                    }
+                    })
 
                     logger.debug { " ${clock.millis()} Finished invoke at coroutine ${Thread.currentThread().name} on instance ${getId()}"}
 
@@ -209,13 +211,14 @@ public class MSInstance(private val ms: Microservice,
 
             }
 
+            allJobs.joinAll()
 
         }
 
     }
 
 
-    suspend private fun communicate(scope: CoroutineScope, currentRequest: Request) {
+    suspend private fun communicate(corScope: CoroutineScope, currentRequest: Request) {
 
         val hopsDone = currentRequest.getHops()
 
@@ -223,15 +226,17 @@ public class MSInstance(private val ms: Microservice,
 
         if (hopsDone < simState.getDepth()) {
 
-            var callMS = commPolicy.communicateMs(ms, hopsDone, registryManager.getMicroservices()).toMutableList()
+            // depth not reached
+
+            val callMS = commPolicy.communicateMs(ms, hopsDone, registryManager.getMicroservices())
 
             // no duplicates
 
-            callMS = callMS.distinct().toMutableList()
+            require(callMS.distinct().size == callMS.size){"Communication should have distinct MS"}
 
             // should not contain self
 
-            callMS.remove(ms)
+            require(!callMS.contains(ms)){"Communication to self not allowed"}
 
             logger.debug{"${clock.millis()} instance ${getId()} communicating with ${callMS.size} ms ${callMS}"}
 
@@ -249,7 +254,7 @@ public class MSInstance(private val ms: Microservice,
 
             for (microservice in callMS) {
 
-                allJobs.add(scope.launch {
+                allJobs.add(corScope.launch {
 
                     val nextHop = hopsDone + 1
 
@@ -259,7 +264,7 @@ public class MSInstance(private val ms: Microservice,
 
             }
 
-            // track launch and resume only on done these
+            // track launched coroutines and resume only on done that is when communication done coroutine finish.
 
             allJobs.joinAll()
 
@@ -267,6 +272,8 @@ public class MSInstance(private val ms: Microservice,
 
 
         } else {
+
+            // max depth reached
 
             resumeCoroutine(currentRequest.getCont())
 
@@ -298,7 +305,7 @@ public class MSInstance(private val ms: Microservice,
      * run request on instance.
      * if not active, make it active.
      */
-    suspend public fun invoke(exeTime: Long, request: Request){
+    public suspend fun invoke(exeTime: Long, request: Request){
 
         logger.debug{" ${clock.millis()} Queuing Invoke request for instance "+ getId() +" with exeTime $exeTime"}
 

@@ -119,11 +119,11 @@ public class SimulatorState
 
                     val queueEntry = queue.poll()
 
-                    val exeTime = exePolicy.time()
-
                     try {
 
                         launch {
+
+                            val exeTime = exePolicy.time()
 
                             val startTime = clock.millis()
 
@@ -173,9 +173,11 @@ public class SimulatorState
 
         var nextReqDelay: Long
 
+        val allJobs = mutableListOf<Job>()
+
         // time loop
 
-        coroutineScope {
+        // coroutineScope {
 
             while (clock.millis() < lastReqTime) {
 
@@ -193,33 +195,19 @@ public class SimulatorState
 
                 // invoke loop
 
-                launch {
+                allJobs.add(scope.launch {
 
-                    val requestJobs = mutableListOf<Job>()
+                    invokeMicroservices(callMS, this)
 
-                    for (request in requests) {
-
-                        totalInvocations += 1
-
-                        requestJobs.add(launch {
-
-                            invoke(request)
-
-                        })
-
-                    }
-
-                    requestJobs.joinAll()
-
-                    logger.debug{"${clock.millis()} Request completed"}
-
-                }
+                })
 
                 delay(nextReqDelay)
 
-            }
+            // }
 
         }
+
+        allJobs.joinAll()
 
         stop()
 
@@ -231,10 +219,44 @@ public class SimulatorState
 
             val item = iterator.next()
 
-            println(Arrays.toString(item.getStats().values))
+            logger.info{Arrays.toString(item.getStats().values)}
 
             item.close()
         }
+
+    }
+
+
+    /**
+     * each call to this function is considered as one request.
+     * parameter can have duplicate microservices.
+     * Not used for communication as communication require different setting.
+     */
+    public suspend fun invokeMicroservices(microservices: List<Microservice>, corScope: CoroutineScope){
+
+        // each call to this function is considered as one request
+
+        // can have duplicate microservices
+
+        val requests = msToRequests(microservices)
+
+        val requestJobs = mutableListOf<Job>()
+
+        for (request in requests) {
+
+            totalInvocations += 1
+
+            requestJobs.add(corScope.launch {
+
+                invoke(request)
+
+            })
+
+        }
+
+        requestJobs.joinAll()
+
+        logger.debug{"${clock.millis()} Request completed"}
 
     }
 
@@ -257,7 +279,7 @@ public class SimulatorState
     private data class MSRequest(val cont: Continuation<Unit>, val request: Request)
 
 
-    suspend public fun invoke(request: Request){
+    public suspend fun invoke(request: Request){
 
         logger.debug{"Current request for ms ${request.ms()}, hop is " + request.getHops()}
 
