@@ -4,6 +4,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import mu.KotlinLogging
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics
+import org.opendc.microservice.simulator.execution.ExeDelay
 import org.opendc.microservice.simulator.router.Request
 import org.opendc.microservice.simulator.state.RegistryManager
 import org.opendc.microservice.simulator.state.SimulatorState
@@ -62,13 +63,15 @@ public class MSInstance(private val ms: Microservice,
 
     private var state: InstanceState = InstanceState.Idle
 
-    private var exeTime = DescriptiveStatistics().apply{ windowSize = 100 }
+    private var exeTimeStat = DescriptiveStatistics().apply{ windowSize = 100 }
 
-    private val queueTime = DescriptiveStatistics().apply{ windowSize = 100 }
+    private val queueTimeStat = DescriptiveStatistics().apply{ windowSize = 100 }
 
-    private val slowDown = DescriptiveStatistics().apply{ windowSize = 100 }
+    private val slowDownStat = DescriptiveStatistics().apply{ windowSize = 100 }
 
     private val commPolicy = simState.getCommPolicy()
+
+    private val exePolicy = simState.getExePolicy()
 
     /**
      * The logger instance of this instance.
@@ -156,7 +159,7 @@ public class MSInstance(private val ms: Microservice,
 
     public fun getStats(): DescriptiveStatistics {
 
-        return queueTime
+        return queueTimeStat
 
     }
 
@@ -191,7 +194,7 @@ public class MSInstance(private val ms: Microservice,
 
                     logger.debug{"exeTime of this request is ${request.exeTime}"}
 
-                    exeTime.addValue(request.exeTime.toDouble())
+                    exeTimeStat.addValue(request.exeTime.toDouble())
 
                     workload.invoke()
 
@@ -308,15 +311,17 @@ public class MSInstance(private val ms: Microservice,
      * run request on instance.
      * if not active, make it active.
      */
-    public suspend fun invoke(exeTime: Long, request: Request){
+    public suspend fun invoke(request: Request){
+
+        val exeTime = exePolicy.time(ms, request.getHops())
 
         logger.debug{" ${clock.millis()} Queuing Invoke request for instance "+ getId() +" with exeTime $exeTime"}
 
         val waitTime = queueLoad().toDouble()
 
-        queueTime.addValue(waitTime)
+        queueTimeStat.addValue(waitTime)
 
-        slowDown.addValue(waitTime+exeTime/exeTime)
+        slowDownStat.addValue(waitTime+exeTime/exeTime)
 
         return suspendCancellableCoroutine { cont ->
             request.setCont(cont)

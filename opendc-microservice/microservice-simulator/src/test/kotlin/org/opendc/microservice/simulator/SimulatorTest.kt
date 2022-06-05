@@ -69,7 +69,7 @@ internal class SimulatorTest {
             }
         }
 
-        val state = SimulatorState(msConfig, RandomRouting(2), RoundRobinLoadBalancer(),
+        val state = SimulatorState(msConfig, 1, RandomRouting(2), RoundRobinLoadBalancer(),
             LogNormalExe(6.0), RandomCommunication(2) ,clock, this, machineModel,
             mapper, 10000, PoissonDelay(1000.0))
 
@@ -83,7 +83,7 @@ internal class SimulatorTest {
     @Test
     fun logNormalExeTest(){
 
-        println(LogNormalExe(7.0).time())
+        // println(LogNormalExe(7.0).time())
 
         assert(true)
 

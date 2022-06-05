@@ -21,6 +21,7 @@ import kotlin.coroutines.resumeWithException
 
 public class SimulatorState
     (private val msConfigs: List<MSConfiguration>,
+     private val depth: Int,
      private val routingPolicy: RoutingPolicy,
      private val loadBalancer: LoadBalancer,
      private val exePolicy: ExeDelay,
@@ -39,9 +40,6 @@ public class SimulatorState
      * service discovery
      */
     private val registryManager = RegistryManager()
-
-    private val depth = 2
-
 
     /**
      * The total amount of ms invocations.
@@ -123,12 +121,10 @@ public class SimulatorState
 
                         launch {
 
-                            val exeTime = exePolicy.time()
-
                             val startTime = clock.millis()
 
                             loadBalancer.instance(queueEntry.request.ms(), registryManager.getInstances()).
-                            invoke(exeTime, queueEntry.request)
+                            invoke(queueEntry.request)
 
                             // resumes when above instance invoke finishes
 
@@ -290,6 +286,13 @@ public class SimulatorState
     public fun getCommPolicy(): CommunicationPolicy {
 
         return commPolicy
+
+    }
+
+
+    public fun getExePolicy(): ExeDelay {
+
+        return exePolicy
 
     }
 
