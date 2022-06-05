@@ -2,13 +2,17 @@ package org.opendc.microservice.simulator.microservice
 
 import java.util.*
 
-class MSConfigGenerator {
+public class MSConfigGenerator {
 
     public fun generate(nrOfMS: Int, nrOfInstances: Int): List<MSConfiguration> {
 
-        val idsCount = nrOfMS * nrOfInstances
+        // plus one for ms id
 
-        val maxIterations = nrOfMS * 2
+        val idsCount = nrOfMS * (nrOfInstances + 1)
+
+        // to prevent infinite loop
+
+        val maxIterations = idsCount * 2
 
         var iterations = 0
 
@@ -22,11 +26,9 @@ class MSConfigGenerator {
 
         }
 
-        require(ids.size != idsCount){"Error generating microservice configs"}
+        require(ids.size == idsCount){"Error generating microservice configs"}
 
         val msConfigs = mutableListOf<MSConfiguration>()
-
-        var config: MSConfiguration
 
         for(i in 1..nrOfMS){
 
@@ -38,7 +40,9 @@ class MSConfigGenerator {
 
             }
 
-            config = MSConfiguration(ids.first().also{ ids.remove(it) }, instanceIds)
+            val msId = ids.first().also{ ids.remove(it) }
+
+            val config = MSConfiguration(msId, instanceIds)
 
             msConfigs.add(config)
 

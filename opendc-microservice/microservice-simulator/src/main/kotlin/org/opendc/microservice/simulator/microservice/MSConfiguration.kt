@@ -6,7 +6,7 @@ import java.util.*
  * Not using this
  */
 public class MSConfiguration(private val id: UUID,
-                             private var instanceIds: List<UUID>,
+                             private val instanceIds: List<UUID>,
 
                              ){
 

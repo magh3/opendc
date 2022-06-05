@@ -22,6 +22,7 @@ import org.opendc.microservice.simulator.microservice.MSConfiguration
 import org.opendc.microservice.simulator.microservice.MSInstance
 import org.opendc.microservice.simulator.mapping.RandomRouting
 import org.opendc.microservice.simulator.mapping.ProbRouting
+import org.opendc.microservice.simulator.microservice.MSConfigGenerator
 import org.opendc.microservice.simulator.state.SimulatorState
 import org.opendc.microservice.simulator.workload.MSWorkload
 import org.opendc.microservice.simulator.workload.MSWorkloadMapper
@@ -51,9 +52,11 @@ internal class SimulatorTest {
     @Test
     fun runMiniSim() = runBlockingSimulation {
 
-        val msConfig = mutableListOf<MSConfiguration>(
-            MSConfiguration(UUID.randomUUID(), listOf(UUID.randomUUID())),
-            MSConfiguration(UUID.randomUUID(), listOf(UUID.randomUUID(), UUID.randomUUID())) )
+        val msConfig = MSConfigGenerator().generate(10,2)
+
+            // mutableListOf<MSConfiguration>(
+            // MSConfiguration(UUID.randomUUID(), listOf(UUID.randomUUID())),
+            // MSConfiguration(UUID.randomUUID(), listOf(UUID.randomUUID(), UUID.randomUUID())) )
 
         val workload = spyk(object : MSWorkload, SimWorkload by SimFlopsWorkload(1000) {
             override suspend fun invoke() {
