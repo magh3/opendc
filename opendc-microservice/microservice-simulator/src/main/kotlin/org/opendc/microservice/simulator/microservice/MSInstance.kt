@@ -186,13 +186,12 @@ public class MSInstance(private val ms: Microservice,
 
                     state = InstanceState.Active
 
-                    logger.debug{" ${clock.millis()} Starting queued request at coroutine ${Thread.currentThread().name} on instance ${getId()}"}
-
                     val request = queue.poll()
 
                     runningLoadEndTime = clock.millis() + request.exeTime
 
-                    logger.debug{"exeTime of this request is ${request.exeTime}"}
+                    logger.debug{" ${clock.millis()} Starting queued request at coroutine ${Thread.currentThread().name}" +
+                        " on instance ${getId()}, exeTime of this request is ${request.exeTime}"}
 
                     exeTimeStat.addValue(request.exeTime.toDouble())
 
@@ -243,7 +242,7 @@ public class MSInstance(private val ms: Microservice,
 
             require(!callMS.contains(ms)){"Communication to self not allowed"}
 
-            logger.debug{"${clock.millis()} instance ${getId()} communicating with ${callMS.size} ms ${callMS}"}
+            logger.debug{"${clock.millis()} instance ${getId()} communicating with ${callMS.size} ms $callMS"}
 
             if (callMS.isEmpty()) {
 
