@@ -202,7 +202,7 @@ public class MSInstance(private val ms: Microservice,
 
                     allJobs.add(launch {
 
-                        communicate(this, request.request)
+                        communicate(this, request.request, request.exeTime)
 
                     })
 
@@ -221,9 +221,11 @@ public class MSInstance(private val ms: Microservice,
     }
 
 
-    suspend private fun communicate(corScope: CoroutineScope, currentRequest: Request) {
+    suspend private fun communicate(corScope: CoroutineScope, currentRequest: Request, exeTime: Long) {
 
         val hopsDone = currentRequest.getHops()
+
+        var commExeTime = 0
 
         // check depth. if depth reached no communicate
 
@@ -247,7 +249,7 @@ public class MSInstance(private val ms: Microservice,
 
                 // no communication. Finish this request coroutine
 
-                resumeCoroutine(currentRequest.getCont())
+                resumeCoroutine(currentRequest.getCont(), exeTime)
 
                 return
 
@@ -261,7 +263,7 @@ public class MSInstance(private val ms: Microservice,
 
                     val nextHop = hopsDone + 1
 
-                    simState.invoke(Request(microservice, nextHop))
+                    commExeTime += simState.invoke(Request(microservice, nextHop))
 
                 })
 
@@ -271,26 +273,22 @@ public class MSInstance(private val ms: Microservice,
 
             allJobs.joinAll()
 
-            resumeCoroutine(currentRequest.getCont())
-
-
-        } else {
-
-            // max depth reached
-
-            resumeCoroutine(currentRequest.getCont())
-
         }
+
+        // max depth reached or communication joined
+
+        resumeCoroutine(currentRequest.getCont(), exeTime + commExeTime)
+
     }
 
 
     /**
      * finish request coroutine
      */
-    private fun resumeCoroutine(cont: Continuation<Unit>){
+    private fun resumeCoroutine(cont: Continuation<Int>, exeTime: Long){
 
         try {
-            cont.resume(Unit)
+            cont.resume(exeTime.toInt())
 
         } catch (cause: CancellationException) {
 
@@ -311,7 +309,7 @@ public class MSInstance(private val ms: Microservice,
      * run request on instance.
      * if not active, make it active.
      */
-    public suspend fun invoke(request: Request){
+    public suspend fun invoke(request: Request): Int{
 
         val exeTime = exePolicy.time(ms, request.getHops())
 
@@ -356,6 +354,6 @@ public class MSInstance(private val ms: Microservice,
     /**
      * A ms invocation request.
      */
-    private data class InvocationRequest(val cont: Continuation<Unit>, val exeTime: Long, val request: Request)
+    private data class InvocationRequest(val cont: Continuation<Int>, val exeTime: Long, val request: Request)
 
 }

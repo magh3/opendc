@@ -123,14 +123,14 @@ public class SimulatorState
 
                             val startTime = clock.millis()
 
-                            loadBalancer.instance(queueEntry.request.ms(), registryManager.getInstances()).
+                            val exeTime = loadBalancer.instance(queueEntry.request.ms(), registryManager.getInstances()).
                             invoke(queueEntry.request)
 
                             // resumes when above instance invoke finishes
 
-                            queueEntry.cont.resume(Unit)
+                            queueEntry.cont.resume(exeTime)
 
-                            logger.debug{"--------------finished instance invoke startTime was $startTime"}
+                            logger.debug{"--------------finished request startTime was $startTime"}
 
                         }
 
@@ -230,9 +230,13 @@ public class SimulatorState
 
         // can have duplicate microservices
 
+        val startTime = clock.millis()
+
         val requests = msToRequests(microservices)
 
         val requestJobs = mutableListOf<Job>()
+
+        var msExeTime = 0
 
         for (request in requests) {
 
@@ -240,7 +244,7 @@ public class SimulatorState
 
             requestJobs.add(corScope.launch {
 
-                invoke(request)
+                msExeTime += invoke(request)
 
             })
 
@@ -248,7 +252,15 @@ public class SimulatorState
 
         requestJobs.joinAll()
 
-        logger.debug{"${clock.millis()} Request completed"}
+        val endTime = clock.millis()
+
+        val totalTime = endTime - startTime
+
+        val waitTime = totalTime - msExeTime
+
+        logger.debug{"${clock.millis()} Request completed with total time $totalTime, " +
+            "execution time was $msExeTime, " +
+            "wait time was $waitTime"}
 
     }
 
@@ -268,10 +280,10 @@ public class SimulatorState
     }
 
 
-    private data class MSRequest(val cont: Continuation<Unit>, val request: Request)
+    private data class MSRequest(val cont: Continuation<Int>, val request: Request)
 
 
-    public suspend fun invoke(request: Request){
+    public suspend fun invoke(request: Request): Int {
 
         logger.debug{"Current request for ms ${request.ms()}, hop is " + request.getHops()}
 

@@ -6,7 +6,7 @@ import kotlin.coroutines.Continuation
 public class Request(private val ms: Microservice,
                      private val hops: Int) {
 
-    private lateinit var cont: Continuation<Unit>
+    private lateinit var cont: Continuation<Int>
 
     /**
      * returns hopes done
@@ -26,14 +26,14 @@ public class Request(private val ms: Microservice,
 
     }
 
-    public fun setCont(firstCont: Continuation<Unit>){
+    public fun setCont(firstCont: Continuation<Int>){
 
         cont = firstCont
 
     }
 
 
-    public fun getCont(): Continuation<Unit> {
+    public fun getCont(): Continuation<Int> {
 
         return cont
 

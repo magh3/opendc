@@ -52,7 +52,7 @@ internal class SimulatorTest {
     @Test
     fun runMiniSim() = runBlockingSimulation {
 
-        val msConfig = MSConfigGenerator().generate(10,2)
+        val msConfig = MSConfigGenerator().generate(3,2)
 
             // mutableListOf<MSConfiguration>(
             // MSConfiguration(UUID.randomUUID(), listOf(UUID.randomUUID())),
@@ -69,21 +69,11 @@ internal class SimulatorTest {
             }
         }
 
-        val state = SimulatorState(msConfig, 1, RandomRouting(2), RoundRobinLoadBalancer(),
+        val state = SimulatorState(msConfig, 1, RandomRouting(4), RoundRobinLoadBalancer(),
             LogNormalExe(6.0), RandomCommunication(2) ,clock, this, machineModel,
             mapper, 10000, PoissonDelay(1000.0))
 
         state.run()
-
-        assert(true)
-
-    }
-
-
-    @Test
-    fun logNormalExeTest(){
-
-        // println(LogNormalExe(7.0).time())
 
         assert(true)
 
