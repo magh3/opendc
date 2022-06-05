@@ -240,7 +240,7 @@ public class MSInstance(private val ms: Microservice,
 
             logger.debug{"${clock.millis()} instance ${getId()} communicating with ${callMS.size} ms ${callMS}"}
 
-            if (callMS.size == 0) {
+            if (callMS.isEmpty()) {
 
                 // no communication. Finish this request coroutine
 
@@ -281,6 +281,9 @@ public class MSInstance(private val ms: Microservice,
     }
 
 
+    /**
+     * finish request coroutine
+     */
     private fun resumeCoroutine(cont: Continuation<Unit>){
 
         try {

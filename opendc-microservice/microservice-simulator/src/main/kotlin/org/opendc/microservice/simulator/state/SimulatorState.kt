@@ -177,8 +177,6 @@ public class SimulatorState
 
         // time loop
 
-        // coroutineScope {
-
             while (clock.millis() < lastReqTime) {
 
                 // get list of microservices
@@ -202,8 +200,6 @@ public class SimulatorState
                 })
 
                 delay(nextReqDelay)
-
-            // }
 
         }
 
