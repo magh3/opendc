@@ -8,6 +8,7 @@ import org.opendc.microservice.simulator.execution.ExeDelay
 import org.opendc.microservice.simulator.router.Request
 import org.opendc.microservice.simulator.state.RegistryManager
 import org.opendc.microservice.simulator.state.SimulatorState
+import org.opendc.microservice.simulator.stats.MSInstanceStats
 import org.opendc.microservice.simulator.workload.MSWorkloadMapper
 import org.opendc.simulator.compute.SimBareMetalMachine
 import org.opendc.simulator.compute.SimMachine
@@ -157,9 +158,9 @@ public class MSInstance(private val ms: Microservice,
     }
 
 
-    public fun getStats(): DescriptiveStatistics {
+    public fun getStats(): MSInstanceStats {
 
-        return queueTimeStat
+        return MSInstanceStats(getId(), exeTimeStat, queueTimeStat, slowDownStat)
 
     }
 
@@ -192,8 +193,6 @@ public class MSInstance(private val ms: Microservice,
 
                     logger.debug{" ${clock.millis()} Starting queued request at coroutine ${Thread.currentThread().name}" +
                         " on instance ${getId()}, exeTime of this request is ${request.exeTime}"}
-
-                    exeTimeStat.addValue(request.exeTime.toDouble())
 
                     workload.invoke()
 
@@ -312,13 +311,21 @@ public class MSInstance(private val ms: Microservice,
 
         val exeTime = exePolicy.time(ms, request.getHops())
 
+        // record execution time
+
+        exeTimeStat.addValue(exeTime.toDouble())
+
         logger.debug{" ${clock.millis()} Queuing Invoke request for instance "+ getId() +" with exeTime $exeTime"}
 
         val waitTime = queueLoad().toDouble()
 
+        // record wait time
+
         queueTimeStat.addValue(waitTime)
 
-        slowDownStat.addValue(waitTime+exeTime/exeTime)
+        // record slowdown
+
+        slowDownStat.addValue( ( (waitTime+exeTime)/exeTime) )
 
         return suspendCancellableCoroutine { cont ->
             request.setCont(cont)

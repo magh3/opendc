@@ -211,7 +211,7 @@ public class SimulatorState
 
             val item = iterator.next()
 
-            logger.info{Arrays.toString(item.getStats().values)}
+            logger.info{item.getStats()}
 
             item.close()
         }
