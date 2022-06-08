@@ -24,6 +24,7 @@ import org.opendc.microservice.simulator.mapping.RandomRouting
 import org.opendc.microservice.simulator.mapping.ProbRouting
 import org.opendc.microservice.simulator.microservice.MSConfigGenerator
 import org.opendc.microservice.simulator.state.SimulatorState
+import org.opendc.microservice.simulator.trace.MSTraceReader
 import org.opendc.microservice.simulator.workload.MSWorkload
 import org.opendc.microservice.simulator.workload.MSWorkloadMapper
 import org.opendc.simulator.compute.kernel.SimSpaceSharedHypervisorProvider
@@ -32,6 +33,7 @@ import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.compute.workload.SimFlopsWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
 import org.opendc.telemetry.sdk.toOtelClock
+import java.io.File
 
 
 internal class SimulatorTest {
@@ -76,6 +78,16 @@ internal class SimulatorTest {
         state.run()
 
         assert(true)
+
+    }
+
+
+    @Test
+    fun readFile(){
+
+        val trace = MSTraceReader().parse(File("src/main/resources/azure_2021.txt"))
+
+        println(trace[0])
 
     }
 

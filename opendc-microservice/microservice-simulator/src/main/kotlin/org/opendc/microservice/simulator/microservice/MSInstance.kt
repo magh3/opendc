@@ -173,6 +173,8 @@ public class MSInstance(private val ms: Microservice,
 
                 machine.startWorkload(workload)
 
+                logger.info{"workload finished at instance ${getId()}"}
+
             }
 
             val allJobs = mutableListOf<Job>()
