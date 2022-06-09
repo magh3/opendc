@@ -23,6 +23,7 @@ import org.opendc.microservice.simulator.microservice.MSInstance
 import org.opendc.microservice.simulator.mapping.RandomRouting
 import org.opendc.microservice.simulator.mapping.ProbRouting
 import org.opendc.microservice.simulator.microservice.MSConfigGenerator
+import org.opendc.microservice.simulator.router.RouterRequestGeneratorImpl
 import org.opendc.microservice.simulator.state.SimulatorState
 import org.opendc.microservice.simulator.trace.MSTraceReader
 import org.opendc.microservice.simulator.workload.MSWorkload
@@ -71,8 +72,10 @@ internal class SimulatorTest {
             }
         }
 
-        val state = SimulatorState(msConfig, 1, RandomRouting(4), RoundRobinLoadBalancer(),
-            LogNormalExe(6.0), RandomCommunication(2) ,clock, this, machineModel,
+        val state = SimulatorState(msConfig,
+            RouterRequestGeneratorImpl(RandomCommunication(2), LogNormalExe(6.0), 1),
+            RoundRobinLoadBalancer(),
+            clock, this, machineModel,
             mapper, 100000, PoissonDelay(200.0))
 
         state.run()

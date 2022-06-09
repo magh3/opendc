@@ -70,10 +70,6 @@ public class MSInstance(private val ms: Microservice,
 
     private val slowDownStat = DescriptiveStatistics().apply{ windowSize = 100 }
 
-    private val commPolicy = simState.getCommPolicy()
-
-    private val exePolicy = simState.getExePolicy()
-
     /**
      * The logger instance of this instance.
      */
@@ -227,57 +223,48 @@ public class MSInstance(private val ms: Microservice,
 
         var commExeTime = 0
 
-        // check depth. if depth reached no communicate
+        // check if there are ms to communicate
 
-        if (hopsDone < simState.getDepth()) {
+        val commRequests = request.getCommRequests(hopsDone, msReq)
 
-            // depth not reached
+        // no duplicates
 
-            val commRequests = request.getCommRequests(hopsDone, msReq)
+        require(commRequests.distinct().size == commRequests.size){"Communication should have distinct MS"}
 
-            // no duplicates
+        // should not contain self
 
-            require(commRequests.distinct().size == commRequests.size){"Communication should have distinct MS"}
+        require(!commRequests.contains(msReq)){"Communication to self not allowed"}
 
-            // should not contain self
+        logger.debug{"${clock.millis()} instance ${getId()} communicating with ${commRequests.size} ms $commRequests"}
 
-            require(!commRequests.contains(msReq)){"Communication to self not allowed"}
+        if (commRequests.isEmpty()) {
 
-            logger.debug{"${clock.millis()} instance ${getId()} communicating with ${commRequests.size} ms $commRequests"}
+            // no communication. Finish this request coroutine
 
-            if (commRequests.isEmpty()) {
+            resumeCoroutine(msReq.getCont(), msReq.getExeTime())
 
-                // no communication. Finish this request coroutine
-
-                resumeCoroutine(msReq.getCont(), msReq.getExeTime())
-
-                return
-
-            }
-
-            val allJobs = mutableListOf<Job>()
-
-            for (commReq in commRequests) {
-
-                allJobs.add(corScope.launch {
-
-                    val nextHop = hopsDone + 1
-
-                    commExeTime += simState.invoke(commReq, RouterRequest(nextHop, request.getHopMSMap()))
-
-                })
-
-            }
-
-            // track launched coroutines and resume only on done that is when communication done coroutine finish.
-
-            allJobs.joinAll()
+            return
 
         }
 
-        // max depth reached or communication joined
+        val allJobs = mutableListOf<Job>()
 
-        resumeCoroutine(msReq.getCont(), msReq.getExeTime())
+        for (commReq in commRequests) {
+
+            allJobs.add(corScope.launch {
+
+                val nextHop = hopsDone + 1
+
+                commExeTime += simState.invoke(commReq, RouterRequest(nextHop, request.getHopMSMap()))
+
+            })
+
+        }
+
+        // track launched coroutines and resume only on done that is when communication done coroutine finish.
+
+        allJobs.joinAll()
+
 
     }
 

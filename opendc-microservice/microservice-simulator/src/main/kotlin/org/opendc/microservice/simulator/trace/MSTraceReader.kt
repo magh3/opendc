@@ -1,6 +1,8 @@
 package org.opendc.microservice.simulator.trace
 
 import java.io.File
+import java.util.stream.Collectors
+
 
 public class MSTraceReader {
 
@@ -30,6 +32,8 @@ public class MSTraceReader {
             idx += 1
 
         }
+
+        // val counts: Map<Int, Long> = listOf(1,2).stream().collect(Collectors.groupingBy({ e -> e }, Collectors.counting()))
 
         return trace
 

@@ -12,6 +12,7 @@ import org.opendc.microservice.simulator.mapping.RoutingPolicy
 import org.opendc.microservice.simulator.microservice.*
 import org.opendc.microservice.simulator.router.MSRequest
 import org.opendc.microservice.simulator.router.RouterRequest
+import org.opendc.microservice.simulator.router.RouterRequestGenerator
 import org.opendc.microservice.simulator.router.RouterRequestGeneratorImpl
 import org.opendc.microservice.simulator.stats.RouterStats
 import org.opendc.microservice.simulator.workload.MSWorkloadMapper
@@ -25,11 +26,8 @@ import kotlin.coroutines.resumeWithException
 
 public class SimulatorState
     (private val msConfigs: List<MSConfiguration>,
-     private val depth: Int,
-     private val routingPolicy: RoutingPolicy,
+     private val requestGenerator: RouterRequestGenerator,
      private val loadBalancer: LoadBalancer,
-     private val exePolicy: ExeDelay,
-     private val commPolicy: CommunicationPolicy,
      private val clock: Clock,
      private val scope: CoroutineScope,
      private val model: MachineModel,
@@ -61,11 +59,11 @@ public class SimulatorState
 
     private val logger = KotlinLogging.logger {}
 
-    private var exeTimeStat = DescriptiveStatistics().apply{ windowSize = 100 }
+    private var exeTimeStat = DescriptiveStatistics()// .apply{ windowSize = 100 }
 
-    private val queueTimeStat = DescriptiveStatistics().apply{ windowSize = 100 }
+    private val queueTimeStat = DescriptiveStatistics()// .apply{ windowSize = 100 }
 
-    private val slowDownStat = DescriptiveStatistics().apply{ windowSize = 100 }
+    private val slowDownStat = DescriptiveStatistics()// .apply{ windowSize = 100 }
 
     init{
 
@@ -100,13 +98,6 @@ public class SimulatorState
             }
 
         }
-
-    }
-
-
-    public fun getDepth(): Int {
-
-        return depth
 
     }
 
@@ -187,8 +178,7 @@ public class SimulatorState
 
                 // get request
 
-                val request = RouterRequestGeneratorImpl(commPolicy, exePolicy)
-                    .request(registryManager.getMicroservices())
+                val request = requestGenerator.request(registryManager.getMicroservices())
 
                 require(request.getHopMSMap().isNotEmpty()){"Empty request Map"}
 
@@ -302,20 +292,6 @@ public class SimulatorState
             queue.add(MSQRequest(cont, msReq, request))
             chan.trySend(Unit)
         }
-
-    }
-
-
-    public fun getCommPolicy(): CommunicationPolicy {
-
-        return commPolicy
-
-    }
-
-
-    public fun getExePolicy(): ExeDelay {
-
-        return exePolicy
 
     }
 
