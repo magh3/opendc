@@ -41,4 +41,8 @@ public class RouterRequest(private val hopsDone: Int,
 
     }
 
+    override fun toString(): String {
+        return hopMSMap.toString()
+    }
+
 }

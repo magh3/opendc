@@ -173,8 +173,6 @@ public class MSInstance(private val ms: Microservice,
 
                 machine.startWorkload(workload)
 
-                logger.info{"workload finished at instance ${getId()}"}
-
             }
 
             val allJobs = mutableListOf<Job>()
@@ -265,7 +263,7 @@ public class MSInstance(private val ms: Microservice,
 
                     val nextHop = hopsDone + 1
 
-                    commExeTime += simState.invoke(commReq, RouterRequest(nextHop, request.getHopMSMap()))
+                    simState.invoke(commReq, RouterRequest(nextHop, request.getHopMSMap()))
 
                 })
 

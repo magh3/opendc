@@ -5,7 +5,7 @@ import org.opendc.microservice.simulator.execution.ExeDelay
 import org.opendc.microservice.simulator.microservice.Microservice
 import java.util.*
 
-class RouterRequestGeneratorImpl(private val msListGenerator: CommunicationPolicy,
+public class RouterRequestGeneratorImpl(private val msListGenerator: CommunicationPolicy,
                                 private val exePolicy: ExeDelay,
                                  private val depth: Int = 1): RouterRequestGenerator {
 
@@ -25,7 +25,7 @@ class RouterRequestGeneratorImpl(private val msListGenerator: CommunicationPolic
 
             for(ms in outerMS){
 
-                val innerMS = msListGenerator.communicateMs(Microservice(UUID.randomUUID()), 0, microservices)
+                val innerMS = msListGenerator.communicateMs(ms, 0, microservices)
 
                 val msReqs = innerMS.map { MSRequest(it, exePolicy.time(ms, i), mapOf<String, Any>()) }
 
@@ -34,6 +34,8 @@ class RouterRequestGeneratorImpl(private val msListGenerator: CommunicationPolic
                 commSet.add(ms)
 
             }
+
+            hopMSMap.add(hopMap)
 
             // map after hop zero can have only ms that were previously communicated to
 

@@ -130,7 +130,7 @@ public class SimulatorState
 
                             // resumes when above instance invoke finishes
 
-                            queueEntry.cont.resume(exeTime)
+                            queueEntry.cont.resume(Unit)
 
                             logger.debug{"--------------finished request startTime was $startTime"}
 
@@ -183,6 +183,10 @@ public class SimulatorState
 
                 request = RouterRequestGeneratorImpl(commPolicy, exePolicy)
                     .request(registryManager.getMicroservices())
+
+                require(request.getHopMSMap().isNotEmpty()){"Empty request Map"}
+
+                println(request)
 
                 nextReqDelay = interArrivalDelay.time()
 
@@ -245,7 +249,7 @@ public class SimulatorState
 
             requestJobs.add(corScope.launch {
 
-                msExeTime += invoke(msReq, request)
+                invoke(msReq, request)
 
             })
 
@@ -267,10 +271,10 @@ public class SimulatorState
 
 
 
-    private data class MSQRequest(val cont: Continuation<Int>, val msReq: MSRequest, val request: RouterRequest)
+    private data class MSQRequest(val cont: Continuation<Unit>, val msReq: MSRequest, val request: RouterRequest)
 
 
-    public suspend fun invoke(msReq: MSRequest, request: RouterRequest): Int {
+    public suspend fun invoke(msReq: MSRequest, request: RouterRequest) {
 
         logger.debug{"Current invoke for ms ${msReq.getMS().getId()}, hop is " + request.getHops()}
 

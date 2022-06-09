@@ -3,7 +3,7 @@ package org.opendc.microservice.simulator.router
 import org.opendc.microservice.simulator.microservice.Microservice
 import kotlin.coroutines.Continuation
 
-class MSRequest(private val ms: Microservice,
+public class MSRequest(private val ms: Microservice,
                 private val exeTime: Long,
                 private val meta: Map<String, Any>){
 
@@ -41,5 +41,10 @@ class MSRequest(private val ms: Microservice,
     }
 
     override fun hashCode(): Int = ms.getId().hashCode()
+
+
+    override fun toString(): String {
+        return ms.toString()
+    }
 
 }
