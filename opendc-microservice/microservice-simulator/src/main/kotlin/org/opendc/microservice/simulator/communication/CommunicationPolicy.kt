@@ -9,6 +9,6 @@ public interface CommunicationPolicy{
      * Not using right now
      */
 
-    public fun communicateMs(ms: Microservice, hopsDone: Int, microservices: MutableList<Microservice>):List<Microservice>
+    public fun communicateMs(ms: Microservice, hopsDone: Int, microservices: List<Microservice>):List<Microservice>
 
 }

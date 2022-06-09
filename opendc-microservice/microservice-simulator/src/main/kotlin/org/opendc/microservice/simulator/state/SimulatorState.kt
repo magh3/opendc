@@ -9,7 +9,7 @@ import org.opendc.microservice.simulator.execution.InterArrivalDelay
 import org.opendc.microservice.simulator.loadBalancer.LoadBalancer
 import org.opendc.microservice.simulator.mapping.RoutingPolicy
 import org.opendc.microservice.simulator.microservice.*
-import org.opendc.microservice.simulator.router.Request
+import org.opendc.microservice.simulator.router.RouterRequest
 import org.opendc.microservice.simulator.workload.MSWorkloadMapper
 import org.opendc.simulator.compute.model.MachineModel
 import java.time.Clock
@@ -165,7 +165,7 @@ public class SimulatorState
 
         var callMS: List<Microservice>
 
-        var requests: List<Request>
+        var requests: List<RouterRequest>
 
         var nextReqDelay: Long
 
@@ -265,13 +265,13 @@ public class SimulatorState
     }
 
 
-    private fun msToRequests(microservices: List<Microservice>): List<Request> {
+    private fun msToRequests(microservices: List<Microservice>): List<RouterRequest> {
 
-        val requests = mutableListOf<Request>()
+        val requests = mutableListOf<RouterRequest>()
 
         for(ms in microservices){
 
-            requests.add(Request(ms, 0))
+            requests.add(RouterRequest(ms, 0))
 
         }
 
@@ -280,10 +280,10 @@ public class SimulatorState
     }
 
 
-    private data class MSRequest(val cont: Continuation<Int>, val request: Request)
+    private data class MSRequest(val cont: Continuation<Int>, val request: RouterRequest)
 
 
-    public suspend fun invoke(request: Request): Int {
+    public suspend fun invoke(request: RouterRequest): Int {
 
         logger.debug{"Current invoke for ms ${request.ms()}, hop is " + request.getHops()}
 
