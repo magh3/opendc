@@ -35,4 +35,10 @@ public class RouterRequest(private val hopsDone: Int,
     }
 
 
+    public fun getHopMSMap(): List<Map<MSRequest, List<MSRequest>>> {
+
+        return hopMSMap
+
+    }
+
 }

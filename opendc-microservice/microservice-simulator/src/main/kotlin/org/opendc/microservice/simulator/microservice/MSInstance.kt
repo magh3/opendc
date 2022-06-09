@@ -4,6 +4,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import mu.KotlinLogging
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics
+import org.opendc.microservice.simulator.router.MSRequest
 import org.opendc.microservice.simulator.router.RouterRequest
 import org.opendc.microservice.simulator.state.RegistryManager
 import org.opendc.microservice.simulator.state.SimulatorState
@@ -130,7 +131,7 @@ public class MSInstance(private val ms: Microservice,
 
         for(request in queue){
 
-            load += request.exeTime.toInt()
+            load += request.msReq.getExeTime().toInt()
 
         }
 
@@ -188,20 +189,22 @@ public class MSInstance(private val ms: Microservice,
 
                     state = InstanceState.Active
 
-                    val request = queue.poll()
+                    val queueEntry = queue.poll()
 
-                    runningLoadEndTime = clock.millis() + request.exeTime
+                    val exeTime = queueEntry.msReq.getExeTime()
+
+                    runningLoadEndTime = clock.millis() + exeTime
 
                     logger.debug{" ${clock.millis()} Starting queued request at coroutine ${Thread.currentThread().name}" +
-                        " on instance ${getId()}, exeTime of this request is ${request.exeTime}"}
+                        " on instance ${getId()}, exeTime of this request is ${exeTime}"}
 
                     workload.invoke()
 
-                    delay(request.exeTime)
+                    delay(exeTime)
 
                     allJobs.add(launch {
 
-                        communicate(this, request.request, request.exeTime)
+                        communicate(this, queueEntry.request, queueEntry.msReq)
 
                     })
 
@@ -220,9 +223,9 @@ public class MSInstance(private val ms: Microservice,
     }
 
 
-    suspend private fun communicate(corScope: CoroutineScope, currentRequest: RouterRequest, exeTime: Long) {
+    suspend private fun communicate(corScope: CoroutineScope, request: RouterRequest, msReq: MSRequest) {
 
-        val hopsDone = currentRequest.getHops()
+        val hopsDone = request.getHops()
 
         var commExeTime = 0
 
@@ -232,23 +235,23 @@ public class MSInstance(private val ms: Microservice,
 
             // depth not reached
 
-            val callMS = commPolicy.communicateMs(ms, hopsDone, registryManager.getMicroservices())
+            val commRequests = request.getCommRequests(hopsDone, msReq)
 
             // no duplicates
 
-            require(callMS.distinct().size == callMS.size){"Communication should have distinct MS"}
+            require(commRequests.distinct().size == commRequests.size){"Communication should have distinct MS"}
 
             // should not contain self
 
-            require(!callMS.contains(ms)){"Communication to self not allowed"}
+            require(!commRequests.contains(msReq)){"Communication to self not allowed"}
 
-            logger.debug{"${clock.millis()} instance ${getId()} communicating with ${callMS.size} ms $callMS"}
+            logger.debug{"${clock.millis()} instance ${getId()} communicating with ${commRequests.size} ms $commRequests"}
 
-            if (callMS.isEmpty()) {
+            if (commRequests.isEmpty()) {
 
                 // no communication. Finish this request coroutine
 
-                resumeCoroutine(currentRequest.getCont(), exeTime)
+                resumeCoroutine(msReq.getCont())
 
                 return
 
@@ -256,13 +259,13 @@ public class MSInstance(private val ms: Microservice,
 
             val allJobs = mutableListOf<Job>()
 
-            for (microservice in callMS) {
+            for (commReq in commRequests) {
 
                 allJobs.add(corScope.launch {
 
                     val nextHop = hopsDone + 1
 
-                    commExeTime += simState.invoke(RouterRequest(microservice, nextHop))
+                    commExeTime += simState.invoke(commReq, RouterRequest(nextHop, request.getHopMSMap()))
 
                 })
 
@@ -276,7 +279,7 @@ public class MSInstance(private val ms: Microservice,
 
         // max depth reached or communication joined
 
-        resumeCoroutine(currentRequest.getCont(), exeTime + commExeTime)
+        resumeCoroutine(msReq.getCont())
 
     }
 
@@ -284,10 +287,10 @@ public class MSInstance(private val ms: Microservice,
     /**
      * finish request coroutine
      */
-    private fun resumeCoroutine(cont: Continuation<Int>, exeTime: Long){
+    private fun resumeCoroutine(cont: Continuation<Unit>){
 
         try {
-            cont.resume(exeTime.toInt())
+            cont.resume(Unit)
 
         } catch (cause: CancellationException) {
 
@@ -308,9 +311,9 @@ public class MSInstance(private val ms: Microservice,
      * run request on instance.
      * if not active, make it active.
      */
-    public suspend fun invoke(request: RouterRequest): Int{
+    public suspend fun invoke(msReq: MSRequest ,request: RouterRequest){
 
-        val exeTime = exePolicy.time(ms, request.getHops())
+        val exeTime = msReq.getExeTime()
 
         // record execution time
 
@@ -329,8 +332,8 @@ public class MSInstance(private val ms: Microservice,
         slowDownStat.addValue( ( (waitTime+exeTime)/exeTime) )
 
         return suspendCancellableCoroutine { cont ->
-            request.setCont(cont)
-            queue.add(InvocationRequest(cont, exeTime, request))
+            msReq.setCont(cont)
+            queue.add(InvocationRequest(msReq, request))
             chan.trySend(Unit)
         }
 
@@ -361,6 +364,6 @@ public class MSInstance(private val ms: Microservice,
     /**
      * A ms invocation request.
      */
-    private data class InvocationRequest(val cont: Continuation<Int>, val exeTime: Long, val request: RouterRequest)
+    private data class InvocationRequest( val msReq: MSRequest, val request: RouterRequest)
 
 }

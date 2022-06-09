@@ -9,7 +9,9 @@ import org.opendc.microservice.simulator.execution.InterArrivalDelay
 import org.opendc.microservice.simulator.loadBalancer.LoadBalancer
 import org.opendc.microservice.simulator.mapping.RoutingPolicy
 import org.opendc.microservice.simulator.microservice.*
+import org.opendc.microservice.simulator.router.MSRequest
 import org.opendc.microservice.simulator.router.RouterRequest
+import org.opendc.microservice.simulator.router.RouterRequestGeneratorImpl
 import org.opendc.microservice.simulator.workload.MSWorkloadMapper
 import org.opendc.simulator.compute.model.MachineModel
 import java.time.Clock
@@ -48,7 +50,7 @@ public class SimulatorState
 
     private var job: Job? = null
 
-    private val queue = ArrayDeque<MSRequest>()
+    private val queue = ArrayDeque<MSQRequest>()
 
     /**
      * A channel used to signal that new invocations have been enqueued.
@@ -123,8 +125,8 @@ public class SimulatorState
 
                             val startTime = clock.millis()
 
-                            val exeTime = loadBalancer.instance(queueEntry.request.ms(), registryManager.getInstances()).
-                            invoke(queueEntry.request)
+                            val exeTime = loadBalancer.instance(queueEntry.msReq.getMS(), registryManager.getInstances()).
+                            invoke(queueEntry.msReq, queueEntry.request)
 
                             // resumes when above instance invoke finishes
 
@@ -165,25 +167,22 @@ public class SimulatorState
 
         var callMS: List<Microservice>
 
-        var requests: List<RouterRequest>
+        var requests: List<MSRequest>
 
         var nextReqDelay: Long
 
         val allJobs = mutableListOf<Job>()
 
+        var request: RouterRequest
+
         // time loop
 
             while (clock.millis() < lastReqTime) {
 
-                // get list of microservices
+                // get request
 
-                callMS = routingPolicy.call(registryManager.getMicroservices())
-
-                // convert list of microservices to list of requests
-
-                requests = msToRequests(callMS)
-
-                logger.debug{"Time ${clock.millis()} received request for ${requests.size} microservices"}
+                request = RouterRequestGeneratorImpl(commPolicy, exePolicy)
+                    .request(registryManager.getMicroservices())
 
                 nextReqDelay = interArrivalDelay.time()
 
@@ -191,7 +190,7 @@ public class SimulatorState
 
                 allJobs.add(scope.launch {
 
-                    invokeMicroservices(callMS, this)
+                    invokeMicroservices(request, this)
 
                 })
 
@@ -224,7 +223,7 @@ public class SimulatorState
      * parameter can have duplicate microservices.
      * Not used for communication as communication require different setting.
      */
-    public suspend fun invokeMicroservices(microservices: List<Microservice>, corScope: CoroutineScope){
+    public suspend fun invokeMicroservices(request: RouterRequest, corScope: CoroutineScope){
 
         // each call to this function is considered as one request
 
@@ -232,19 +231,21 @@ public class SimulatorState
 
         val startTime = clock.millis()
 
-        val requests = msToRequests(microservices)
+        val msRequests = request.getInitMSRequests()
 
         val requestJobs = mutableListOf<Job>()
 
         var msExeTime = 0
 
-        for (request in requests) {
+        logger.debug{"Time ${clock.millis()} received request for ${msRequests.size} microservices"}
+
+        for (msReq in msRequests) {
 
             totalInvocations += 1
 
             requestJobs.add(corScope.launch {
 
-                msExeTime += invoke(request)
+                msExeTime += invoke(msReq, request)
 
             })
 
@@ -265,30 +266,16 @@ public class SimulatorState
     }
 
 
-    private fun msToRequests(microservices: List<Microservice>): List<RouterRequest> {
 
-        val requests = mutableListOf<RouterRequest>()
-
-        for(ms in microservices){
-
-            requests.add(RouterRequest(ms, 0))
-
-        }
-
-        return requests.toList()
-
-    }
+    private data class MSQRequest(val cont: Continuation<Int>, val msReq: MSRequest, val request: RouterRequest)
 
 
-    private data class MSRequest(val cont: Continuation<Int>, val request: RouterRequest)
+    public suspend fun invoke(msReq: MSRequest, request: RouterRequest): Int {
 
-
-    public suspend fun invoke(request: RouterRequest): Int {
-
-        logger.debug{"Current invoke for ms ${request.ms()}, hop is " + request.getHops()}
+        logger.debug{"Current invoke for ms ${msReq.getMS().getId()}, hop is " + request.getHops()}
 
         return suspendCancellableCoroutine { cont ->
-            queue.add(MSRequest(cont, request))
+            queue.add(MSQRequest(cont, msReq, request))
             chan.trySend(Unit)
         }
 
