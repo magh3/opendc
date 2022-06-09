@@ -249,7 +249,7 @@ public class MSInstance(private val ms: Microservice,
 
                 // no communication. Finish this request coroutine
 
-                resumeCoroutine(msReq.getCont())
+                resumeCoroutine(msReq.getCont(), msReq.getExeTime())
 
                 return
 
@@ -263,7 +263,7 @@ public class MSInstance(private val ms: Microservice,
 
                     val nextHop = hopsDone + 1
 
-                    simState.invoke(commReq, RouterRequest(nextHop, request.getHopMSMap()))
+                    commExeTime += simState.invoke(commReq, RouterRequest(nextHop, request.getHopMSMap()))
 
                 })
 
@@ -277,7 +277,7 @@ public class MSInstance(private val ms: Microservice,
 
         // max depth reached or communication joined
 
-        resumeCoroutine(msReq.getCont())
+        resumeCoroutine(msReq.getCont(), msReq.getExeTime())
 
     }
 
@@ -285,10 +285,10 @@ public class MSInstance(private val ms: Microservice,
     /**
      * finish request coroutine
      */
-    private fun resumeCoroutine(cont: Continuation<Unit>){
+    private fun resumeCoroutine(cont: Continuation<Int>, exeTime: Long){
 
         try {
-            cont.resume(Unit)
+            cont.resume(exeTime.toInt())
 
         } catch (cause: CancellationException) {
 
@@ -309,7 +309,7 @@ public class MSInstance(private val ms: Microservice,
      * run request on instance.
      * if not active, make it active.
      */
-    public suspend fun invoke(msReq: MSRequest ,request: RouterRequest){
+    public suspend fun invoke(msReq: MSRequest ,request: RouterRequest): Int{
 
         val exeTime = msReq.getExeTime()
 

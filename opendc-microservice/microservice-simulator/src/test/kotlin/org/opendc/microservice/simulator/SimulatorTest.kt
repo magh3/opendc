@@ -54,7 +54,7 @@ internal class SimulatorTest {
     @Test
     fun runMiniSim() = runBlockingSimulation {
 
-        val msConfig = MSConfigGenerator().generate(3,2)
+        val msConfig = MSConfigGenerator().generate(5,2)
 
             // mutableListOf<MSConfiguration>(
             // MSConfiguration(UUID.randomUUID(), listOf(UUID.randomUUID())),
@@ -73,7 +73,7 @@ internal class SimulatorTest {
 
         val state = SimulatorState(msConfig, 1, RandomRouting(4), RoundRobinLoadBalancer(),
             LogNormalExe(6.0), RandomCommunication(2) ,clock, this, machineModel,
-            mapper, 10000, PoissonDelay(1000.0))
+            mapper, 100000, PoissonDelay(200.0))
 
         state.run()
 

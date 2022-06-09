@@ -3,6 +3,7 @@ package org.opendc.microservice.simulator.state
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import mu.KotlinLogging
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics
 import org.opendc.microservice.simulator.communication.CommunicationPolicy
 import org.opendc.microservice.simulator.execution.ExeDelay
 import org.opendc.microservice.simulator.execution.InterArrivalDelay
@@ -12,6 +13,7 @@ import org.opendc.microservice.simulator.microservice.*
 import org.opendc.microservice.simulator.router.MSRequest
 import org.opendc.microservice.simulator.router.RouterRequest
 import org.opendc.microservice.simulator.router.RouterRequestGeneratorImpl
+import org.opendc.microservice.simulator.stats.RouterStats
 import org.opendc.microservice.simulator.workload.MSWorkloadMapper
 import org.opendc.simulator.compute.model.MachineModel
 import java.time.Clock
@@ -58,6 +60,12 @@ public class SimulatorState
     private val chan = Channel<Unit>(Channel.RENDEZVOUS)
 
     private val logger = KotlinLogging.logger {}
+
+    private var exeTimeStat = DescriptiveStatistics().apply{ windowSize = 100 }
+
+    private val queueTimeStat = DescriptiveStatistics().apply{ windowSize = 100 }
+
+    private val slowDownStat = DescriptiveStatistics().apply{ windowSize = 100 }
 
     init{
 
@@ -130,7 +138,7 @@ public class SimulatorState
 
                             // resumes when above instance invoke finishes
 
-                            queueEntry.cont.resume(Unit)
+                            queueEntry.cont.resume(exeTime)
 
                             logger.debug{"--------------finished request startTime was $startTime"}
 
@@ -173,20 +181,18 @@ public class SimulatorState
 
         val allJobs = mutableListOf<Job>()
 
-        var request: RouterRequest
-
         // time loop
 
             while (clock.millis() < lastReqTime) {
 
                 // get request
 
-                request = RouterRequestGeneratorImpl(commPolicy, exePolicy)
+                val request = RouterRequestGeneratorImpl(commPolicy, exePolicy)
                     .request(registryManager.getMicroservices())
 
                 require(request.getHopMSMap().isNotEmpty()){"Empty request Map"}
 
-                println(request)
+                logger.debug{request}
 
                 nextReqDelay = interArrivalDelay.time()
 
@@ -205,6 +211,8 @@ public class SimulatorState
         allJobs.joinAll()
 
         stop()
+
+        logger.info { getStats() }
 
         val myCollection = registryManager.getInstances()
 
@@ -249,7 +257,7 @@ public class SimulatorState
 
             requestJobs.add(corScope.launch {
 
-                invoke(msReq, request)
+                msExeTime += invoke(msReq, request)
 
             })
 
@@ -263,6 +271,12 @@ public class SimulatorState
 
         val waitTime = totalTime - msExeTime
 
+        exeTimeStat.addValue(msExeTime.toDouble())
+
+        queueTimeStat.addValue(waitTime.toDouble())
+
+        slowDownStat.addValue(((msExeTime+waitTime)/msExeTime).toDouble() )
+
         logger.debug{"${clock.millis()} Request completed with total time $totalTime, " +
             "execution time was $msExeTime, " +
             "wait time was $waitTime"}
@@ -270,11 +284,17 @@ public class SimulatorState
     }
 
 
+    public fun getStats(): RouterStats {
 
-    private data class MSQRequest(val cont: Continuation<Unit>, val msReq: MSRequest, val request: RouterRequest)
+        return RouterStats(exeTimeStat, queueTimeStat, slowDownStat)
+
+    }
 
 
-    public suspend fun invoke(msReq: MSRequest, request: RouterRequest) {
+    private data class MSQRequest(val cont: Continuation<Int>, val msReq: MSRequest, val request: RouterRequest)
+
+
+    public suspend fun invoke(msReq: MSRequest, request: RouterRequest): Int {
 
         logger.debug{"Current invoke for ms ${msReq.getMS().getId()}, hop is " + request.getHops()}
 

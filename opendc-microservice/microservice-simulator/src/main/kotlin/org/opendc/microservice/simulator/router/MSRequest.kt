@@ -7,7 +7,7 @@ public class MSRequest(private val ms: Microservice,
                 private val exeTime: Long,
                 private val meta: Map<String, Any>){
 
-    private lateinit var cont: Continuation<Unit>
+    private lateinit var cont: Continuation<Int>
 
 
     public fun getMS(): Microservice {
@@ -15,7 +15,7 @@ public class MSRequest(private val ms: Microservice,
     }
 
 
-    public fun getCont(): Continuation<Unit> {
+    public fun getCont(): Continuation<Int> {
 
         return cont
 
@@ -29,7 +29,7 @@ public class MSRequest(private val ms: Microservice,
     }
 
 
-    public fun setCont(continuation: Continuation<Unit>){
+    public fun setCont(continuation: Continuation<Int>){
 
         cont = continuation
 

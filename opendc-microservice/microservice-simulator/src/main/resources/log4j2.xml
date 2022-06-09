@@ -30,7 +30,7 @@
         </Console>
     </Appenders>
     <Loggers>
-        <Logger name="org.opendc" level="all" additivity="false">
+        <Logger name="org.opendc" level="info" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
         <Root level="error">
