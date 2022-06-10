@@ -265,6 +265,7 @@ public class MSInstance(private val ms: Microservice,
 
         allJobs.joinAll()
 
+        resumeCoroutine(msReq.getCont(), msReq.getExeTime())
 
     }
 
