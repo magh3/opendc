@@ -1,4 +1,4 @@
-package org.opendc.microservice.simulator.execution
+package org.opendc.microservice.simulator.router
 
 public interface InterArrivalDelay {
 

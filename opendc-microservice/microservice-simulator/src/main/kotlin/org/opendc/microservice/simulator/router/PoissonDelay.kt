@@ -1,8 +1,8 @@
-package org.opendc.microservice.simulator.execution
+package org.opendc.microservice.simulator.router
 
 import org.apache.commons.math3.distribution.PoissonDistribution
 
-public class PoissonDelay(rate: Double): InterArrivalDelay{
+public class PoissonDelay(rate: Double): InterArrivalDelay {
 
     private val dist: PoissonDistribution = PoissonDistribution(rate)
 

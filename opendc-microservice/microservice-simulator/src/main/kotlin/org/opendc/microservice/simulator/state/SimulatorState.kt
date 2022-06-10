@@ -4,16 +4,13 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import mu.KotlinLogging
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics
-import org.opendc.microservice.simulator.communication.CommunicationPolicy
-import org.opendc.microservice.simulator.execution.ExeDelay
-import org.opendc.microservice.simulator.execution.InterArrivalDelay
+import org.opendc.microservice.simulator.execution.QueuePolicy
+import org.opendc.microservice.simulator.router.InterArrivalDelay
 import org.opendc.microservice.simulator.loadBalancer.LoadBalancer
-import org.opendc.microservice.simulator.mapping.RoutingPolicy
 import org.opendc.microservice.simulator.microservice.*
 import org.opendc.microservice.simulator.router.MSRequest
 import org.opendc.microservice.simulator.router.RouterRequest
 import org.opendc.microservice.simulator.router.RouterRequestGenerator
-import org.opendc.microservice.simulator.router.RouterRequestGeneratorImpl
 import org.opendc.microservice.simulator.stats.RouterStats
 import org.opendc.microservice.simulator.workload.MSWorkloadMapper
 import org.opendc.simulator.compute.model.MachineModel
@@ -28,6 +25,7 @@ public class SimulatorState
     (private val msConfigs: List<MSConfiguration>,
      private val requestGenerator: RouterRequestGenerator,
      private val loadBalancer: LoadBalancer,
+     private val queuePolicy: QueuePolicy,
      private val clock: Clock,
      private val scope: CoroutineScope,
      private val model: MachineModel,
@@ -277,6 +275,13 @@ public class SimulatorState
     public fun getStats(): RouterStats {
 
         return RouterStats(exeTimeStat, queueTimeStat, slowDownStat)
+
+    }
+
+
+    public fun getQueuePolicy(): QueuePolicy {
+
+        return queuePolicy
 
     }
 

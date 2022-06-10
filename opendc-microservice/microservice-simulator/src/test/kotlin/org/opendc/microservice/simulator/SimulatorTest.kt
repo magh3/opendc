@@ -12,16 +12,13 @@ import org.opendc.simulator.core.runBlockingSimulation
 import java.util.*
 import org.opendc.compute.workload.telemetry.SdkTelemetryManager
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
-import kotlinx.coroutines.delay
 import org.opendc.compute.workload.topology.HostSpec
 import org.opendc.microservice.simulator.communication.RandomCommunication
+import org.opendc.microservice.simulator.execution.FirstComeFirstServe
 import org.opendc.microservice.simulator.execution.LogNormalExe
-import org.opendc.microservice.simulator.execution.PoissonDelay
+import org.opendc.microservice.simulator.router.PoissonDelay
 import org.opendc.microservice.simulator.loadBalancer.*
-import org.opendc.microservice.simulator.microservice.MSConfiguration
 import org.opendc.microservice.simulator.microservice.MSInstance
-import org.opendc.microservice.simulator.mapping.RandomRouting
-import org.opendc.microservice.simulator.mapping.ProbRouting
 import org.opendc.microservice.simulator.microservice.MSConfigGenerator
 import org.opendc.microservice.simulator.router.RouterRequestGeneratorImpl
 import org.opendc.microservice.simulator.state.SimulatorState
@@ -33,7 +30,6 @@ import org.opendc.simulator.compute.power.ConstantPowerModel
 import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.compute.workload.SimFlopsWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
-import org.opendc.telemetry.sdk.toOtelClock
 import java.io.File
 
 
@@ -73,10 +69,11 @@ internal class SimulatorTest {
         }
 
         val state = SimulatorState(msConfig,
-            RouterRequestGeneratorImpl(RandomCommunication(2), LogNormalExe(6.0), 1),
-            RoundRobinLoadBalancer(),
+            RouterRequestGeneratorImpl(RandomCommunication(1), LogNormalExe(6.0), 1),
+            RoundRobinLoadBalancer(), FirstComeFirstServe(),
             clock, this, machineModel,
-            mapper, 100000, PoissonDelay(200.0))
+            mapper, 100000, PoissonDelay(1000.0)
+        )
 
         state.run()
 

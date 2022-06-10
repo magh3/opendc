@@ -183,7 +183,7 @@ public class MSInstance(private val ms: Microservice,
 
                     state = InstanceState.Active
 
-                    val queueEntry = queue.poll()
+                    val queueEntry = simState.getQueuePolicy().getEntry(queue)
 
                     val exeTime = queueEntry.msReq.getExeTime()
 
@@ -349,6 +349,6 @@ public class MSInstance(private val ms: Microservice,
     /**
      * A ms invocation request.
      */
-    private data class InvocationRequest( val msReq: MSRequest, val request: RouterRequest)
+    public data class InvocationRequest( val msReq: MSRequest, val request: RouterRequest)
 
 }
