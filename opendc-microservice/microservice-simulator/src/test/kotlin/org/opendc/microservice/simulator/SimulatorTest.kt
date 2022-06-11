@@ -69,7 +69,8 @@ internal class SimulatorTest {
         }
 
         val state = SimulatorState(msConfig,
-            RouterRequestGeneratorImpl(RandomCommunication(1), LogNormalExe(6.0), 1),
+            RouterRequestGeneratorImpl(clock, RandomCommunication(1), LogNormalExe(6.0),
+                3),
             RoundRobinLoadBalancer(), FirstComeFirstServe(),
             clock, this, machineModel,
             mapper, 100000, PoissonDelay(1000.0)

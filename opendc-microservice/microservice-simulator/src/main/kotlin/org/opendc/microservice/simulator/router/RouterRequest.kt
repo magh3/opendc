@@ -12,6 +12,8 @@ public class RouterRequest(private val hopsDone: Int,
 
     public fun getCommRequests(hopsDone: Int, callingReq: MSRequest): List<MSRequest> {
 
+        if(hopsDone > hopMSMap.size -1) return listOf()
+
         return hopMSMap[hopsDone].get(callingReq) ?: listOf()
 
     }

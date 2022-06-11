@@ -5,7 +5,7 @@ import kotlin.coroutines.Continuation
 
 public class MSRequest(private val ms: Microservice,
                 private val exeTime: Long,
-                private val meta: Map<String, Any>){
+                private val meta: MutableMap<String, Any>){
 
     private lateinit var cont: Continuation<Int>
 
@@ -32,6 +32,13 @@ public class MSRequest(private val ms: Microservice,
     public fun setCont(continuation: Continuation<Int>){
 
         cont = continuation
+
+    }
+
+
+    public fun setMeta(key: String, value: Any){
+
+        meta[key] = value
 
     }
 
