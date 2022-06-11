@@ -68,7 +68,7 @@ public class RouterRequestGeneratorImpl(private val clock: Clock, private val ms
 
                         val commExeTime = exePolicy.time(ms, hopDone)
 
-                        val commMeta = mutableMapOf<String, Any>("deadline" to (clock.millis() + stageDeadline) )
+                        val commMeta = mutableMapOf<String, Any>("stageDeadline" to (clock.millis() + stageDeadline) )
 
                         commMSReqs.add(MSRequest(commMS, commExeTime, commMeta))
 

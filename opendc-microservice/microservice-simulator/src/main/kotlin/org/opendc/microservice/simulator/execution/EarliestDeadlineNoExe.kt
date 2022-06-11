@@ -8,9 +8,9 @@ public class EarliestDeadlineNoExe: QueuePolicy {
 
     override fun getEntry(queue: Queue<MSInstance.InvocationRequest>): Queue<MSInstance.InvocationRequest> {
 
-        val entryList = queue.toMutableList()
+        var entryList = queue.toMutableList()
 
-        entryList.sortedWith(deadineCompare)
+        entryList = entryList.sortedWith(deadineCompare) as MutableList<MSInstance.InvocationRequest>
 
         return ArrayDeque<MSInstance.InvocationRequest>(entryList)
 
