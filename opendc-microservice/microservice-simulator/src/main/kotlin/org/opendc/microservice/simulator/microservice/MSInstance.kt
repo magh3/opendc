@@ -38,7 +38,7 @@ public class MSInstance(private val ms: Microservice,
 
     private val workload = mapper.createWorkload(this)
 
-    private val queue = ArrayDeque<InvocationRequest>()
+    private var queue = ArrayDeque<InvocationRequest>()
 
     /**
      * A channel used to signal that new invocations have been enqueued.
@@ -183,7 +183,9 @@ public class MSInstance(private val ms: Microservice,
 
                     state = InstanceState.Active
 
-                    val queueEntry = simState.getQueuePolicy().getEntry(queue)
+                    queue = simState.getQueuePolicy().getEntry(queue) as ArrayDeque<InvocationRequest>
+
+                    val queueEntry = queue.poll()
 
                     val exeTime = queueEntry.msReq.getExeTime()
 

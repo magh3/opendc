@@ -9,7 +9,13 @@ public class LogNormalExe(private val m:Double =0.0, private val s:Double =1.0):
 
         val logNormal = LogNormalDistribution(m, s)
 
-        return logNormal.sample().toLong()
+        var exeTime = logNormal.sample().toLong()
+
+        if(exeTime.toInt() == 0) exeTime = 1
+
+        // exeTime *= 1000
+
+        return exeTime
 
     }
 

@@ -5,6 +5,6 @@ import java.util.*
 
 public interface QueuePolicy {
 
-    public fun getEntry(queue: Queue<MSInstance.InvocationRequest>): MSInstance.InvocationRequest
+    public fun getEntry(queue: Queue<MSInstance.InvocationRequest>): Queue<MSInstance.InvocationRequest>
 
 }

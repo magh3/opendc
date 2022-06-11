@@ -29,6 +29,13 @@ public class MSRequest(private val ms: Microservice,
     }
 
 
+    public fun getMeta(): MutableMap<String, Any> {
+
+        return meta
+
+    }
+
+
     public fun setCont(continuation: Continuation<Int>){
 
         cont = continuation

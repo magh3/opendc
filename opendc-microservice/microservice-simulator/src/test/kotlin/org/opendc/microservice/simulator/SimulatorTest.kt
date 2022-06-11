@@ -14,6 +14,7 @@ import org.opendc.compute.workload.telemetry.SdkTelemetryManager
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import org.opendc.compute.workload.topology.HostSpec
 import org.opendc.microservice.simulator.communication.RandomCommunication
+import org.opendc.microservice.simulator.execution.EarliestDeadlineNoExe
 import org.opendc.microservice.simulator.execution.FirstComeFirstServe
 import org.opendc.microservice.simulator.execution.LogNormalExe
 import org.opendc.microservice.simulator.router.PoissonDelay
@@ -71,7 +72,7 @@ internal class SimulatorTest {
         val state = SimulatorState(msConfig,
             RouterRequestGeneratorImpl(clock, RandomCommunication(2), LogNormalExe(6.0),
                 2),
-            RoundRobinLoadBalancer(), FirstComeFirstServe(),
+            RoundRobinLoadBalancer(), EarliestDeadlineNoExe(),
             clock, this, machineModel,
             mapper, 100000, PoissonDelay(1000.0)
         )
@@ -89,6 +90,16 @@ internal class SimulatorTest {
         val trace = MSTraceReader().parse(File("src/main/resources/azure_2021.txt"))
 
         println(trace[0])
+
+    }
+
+
+    @Test
+    fun exeTimes(){
+
+        val time = LogNormalExe(-0.38, 2.36).time(Microservice(UUID.randomUUID()),0)
+
+        println(time)
 
     }
 

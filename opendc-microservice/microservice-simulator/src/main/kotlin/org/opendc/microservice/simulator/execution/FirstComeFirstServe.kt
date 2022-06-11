@@ -5,9 +5,9 @@ import java.util.*
 
 public class FirstComeFirstServe(): QueuePolicy {
 
-    override fun getEntry(queue: Queue<MSInstance.InvocationRequest>): MSInstance.InvocationRequest {
+    override fun getEntry(queue: Queue<MSInstance.InvocationRequest>): Queue<MSInstance.InvocationRequest> {
 
-        return queue.poll()
+        return queue
 
     }
 

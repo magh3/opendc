@@ -14,6 +14,8 @@ public class RouterRequestGeneratorImpl(private val clock: Clock, private val ms
 
     private val logger = KotlinLogging.logger {}
 
+    private val sla = 2000
+
     override fun request(microservices: List<Microservice>): RouterRequest {
 
         val hopMSMap = mutableListOf<Map<MSRequest, List<MSRequest>>>()
@@ -23,6 +25,8 @@ public class RouterRequestGeneratorImpl(private val clock: Clock, private val ms
         val reqDepth = Random.nextInt(0,depth+1)
 
         logger.debug{"making request with depth $reqDepth"}
+
+        val stageDeadline = (sla/(reqDepth+1)).toLong()
 
         // runs at least once for 0.
 
@@ -44,7 +48,7 @@ public class RouterRequestGeneratorImpl(private val clock: Clock, private val ms
 
                 if(exeTime > maxExe) maxExe = exeTime
 
-                val metaMap = mutableMapOf<String, Any>("deadline" to (clock.millis() + ((i+1)*500) ))
+                val metaMap = mutableMapOf<String, Any>("stageDeadline" to (clock.millis() + stageDeadline) )
 
                 val commMSReqs = mutableListOf<MSRequest>()
 
@@ -64,7 +68,7 @@ public class RouterRequestGeneratorImpl(private val clock: Clock, private val ms
 
                         val commExeTime = exePolicy.time(ms, hopDone)
 
-                        val commMeta = mutableMapOf<String, Any>("deadline" to (clock.millis() + ((hopDone+1)*500) ))
+                        val commMeta = mutableMapOf<String, Any>("deadline" to (clock.millis() + stageDeadline) )
 
                         commMSReqs.add(MSRequest(commMS, commExeTime, commMeta))
 

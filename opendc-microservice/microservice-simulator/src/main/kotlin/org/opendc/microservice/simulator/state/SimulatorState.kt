@@ -61,6 +61,8 @@ public class SimulatorState
 
     private val queueTimeStat = DescriptiveStatistics()// .apply{ windowSize = 100 }
 
+    private val totalTimeStat = DescriptiveStatistics()// .apply{ windowSize = 100 }
+
     private val slowDownStat = DescriptiveStatistics()// .apply{ windowSize = 100 }
 
     init{
@@ -263,6 +265,8 @@ public class SimulatorState
 
         queueTimeStat.addValue(waitTime.toDouble())
 
+        totalTimeStat.addValue(totalTime.toDouble())
+
         slowDownStat.addValue(((msExeTime+waitTime)/msExeTime).toDouble() )
 
         logger.debug{"${clock.millis()} Request completed with total time $totalTime, " +
@@ -274,7 +278,7 @@ public class SimulatorState
 
     public fun getStats(): RouterStats {
 
-        return RouterStats(exeTimeStat, queueTimeStat, slowDownStat)
+        return RouterStats(exeTimeStat, queueTimeStat, totalTimeStat, slowDownStat)
 
     }
 
