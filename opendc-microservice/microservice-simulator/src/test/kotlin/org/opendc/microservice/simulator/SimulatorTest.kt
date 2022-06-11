@@ -13,6 +13,7 @@ import java.util.*
 import org.opendc.compute.workload.telemetry.SdkTelemetryManager
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import org.opendc.compute.workload.topology.HostSpec
+import org.opendc.microservice.simulator.communication.ProbCommunication
 import org.opendc.microservice.simulator.communication.RandomCommunication
 import org.opendc.microservice.simulator.execution.EarliestDeadlineNoExe
 import org.opendc.microservice.simulator.execution.FirstComeFirstServe
@@ -52,7 +53,7 @@ internal class SimulatorTest {
     @Test
     fun runMiniSim() = runBlockingSimulation {
 
-        val msConfig = MSConfigGenerator().generate(5,2)
+        val msConfig = MSConfigGenerator().generate(4,2)
 
             // mutableListOf<MSConfiguration>(
             // MSConfiguration(UUID.randomUUID(), listOf(UUID.randomUUID())),
@@ -70,9 +71,10 @@ internal class SimulatorTest {
         }
 
         val state = SimulatorState(msConfig,
-            RouterRequestGeneratorImpl(clock, RandomCommunication(1), LogNormalExe(6.0),
+            RouterRequestGeneratorImpl(clock, ProbCommunication(listOf(0.62,0.18,0.08,0.12),1),
+                LogNormalExe(6.0),
                 4),
-            RoundRobinLoadBalancer(), FirstComeFirstServe(),
+            RoundRobinLoadBalancer(), EarliestDeadlineNoExe(),
             clock, this, machineModel,
             mapper, 100000, PoissonDelay(200.0)
         )

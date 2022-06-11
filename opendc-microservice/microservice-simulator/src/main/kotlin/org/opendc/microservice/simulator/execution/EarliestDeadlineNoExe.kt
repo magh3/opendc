@@ -10,7 +10,7 @@ public class EarliestDeadlineNoExe: QueuePolicy {
 
         var entryList = queue.toMutableList()
 
-        entryList = entryList.sortedWith(deadineCompare) as MutableList<MSInstance.InvocationRequest>
+        entryList = entryList.sortedWith(deadineCompare.reversed()) as MutableList<MSInstance.InvocationRequest>
 
         return ArrayDeque<MSInstance.InvocationRequest>(entryList)
 
@@ -18,8 +18,9 @@ public class EarliestDeadlineNoExe: QueuePolicy {
 
     private val deadineCompare =  Comparator<MSInstance.InvocationRequest> { a, b ->
         when {
-            (a.msReq.getMeta()["stageDeadline"].toString().toInt() < b.msReq.getMeta()["stageDeadline"].toString().toInt()) -> 0
-            else -> 1
+            (a.msReq.getMeta()["stageDeadline"].toString().toInt() == b.msReq.getMeta()["stageDeadline"].toString().toInt()) -> 0
+            (a.msReq.getMeta()["stageDeadline"].toString().toInt() > b.msReq.getMeta()["stageDeadline"].toString().toInt()) -> 1
+            else -> -1
         }
     }
 
