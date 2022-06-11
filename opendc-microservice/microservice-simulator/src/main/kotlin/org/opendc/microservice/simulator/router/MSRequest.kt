@@ -42,14 +42,6 @@ public class MSRequest(private val ms: Microservice,
 
     }
 
-
-    override fun equals(other: Any?): Boolean {
-        return other is MSRequest && ms == other.getMS()
-    }
-
-    override fun hashCode(): Int = ms.getId().hashCode()
-
-
     override fun toString(): String {
         return ms.toString()
     }
