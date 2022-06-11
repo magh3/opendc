@@ -1,5 +1,6 @@
 package org.opendc.microservice.simulator.router
 
+import mu.KotlinLogging
 import org.opendc.microservice.simulator.communication.CommunicationPolicy
 import org.opendc.microservice.simulator.execution.ExeDelay
 import org.opendc.microservice.simulator.microservice.Microservice
@@ -11,6 +12,8 @@ public class RouterRequestGeneratorImpl(private val clock: Clock, private val ms
                                 private val exePolicy: ExeDelay,
                                  private val depth: Int = 1): RouterRequestGenerator {
 
+    private val logger = KotlinLogging.logger {}
+
     override fun request(microservices: List<Microservice>): RouterRequest {
 
         val hopMSMap = mutableListOf<Map<MSRequest, List<MSRequest>>>()
@@ -19,11 +22,11 @@ public class RouterRequestGeneratorImpl(private val clock: Clock, private val ms
 
         val reqDepth = Random.nextInt(0,depth+1)
 
-        println("making request with depth $reqDepth")
+        logger.debug{"making request with depth $reqDepth"}
 
         // runs at least once for 0.
 
-        for(i in 0 until reqDepth){
+        for(i in 0..reqDepth){
 
             // comm for depth i list
 
@@ -33,7 +36,7 @@ public class RouterRequestGeneratorImpl(private val clock: Clock, private val ms
 
             var maxExe: Long = 0
 
-            println("outerMS is $outerMS")
+            logger.debug{"outerMS is $outerMS"}
 
             for(ms in outerMS){
 
@@ -55,7 +58,7 @@ public class RouterRequestGeneratorImpl(private val clock: Clock, private val ms
 
                         // hope is done when comm ms executes
 
-                        println("adding comm ms: $commMS")
+                        logger.debug{"adding comm ms: $commMS"}
 
                         val hopDone = i+1
 
@@ -77,7 +80,13 @@ public class RouterRequestGeneratorImpl(private val clock: Clock, private val ms
 
             }
 
-            if(hopMap.isEmpty()) break
+            if(hopMap.isEmpty()) {
+
+                logger.debug {"empty map breaking"}
+
+                break
+
+            }
 
             hopMSMap.add(hopMap)
 
