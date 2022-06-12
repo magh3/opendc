@@ -241,7 +241,7 @@ public class MSInstance(private val ms: Microservice,
 
         if (commRequests.isEmpty()) {
 
-            // no communication. Finish this request coroutine
+            // no routerMapping. Finish this request coroutine
 
             resumeCoroutine(msReq.getCont(), msReq.getExeTime())
 
@@ -263,7 +263,7 @@ public class MSInstance(private val ms: Microservice,
 
         }
 
-        // track launched coroutines and resume only on done that is when communication done coroutine finish.
+        // track launched coroutines and resume only on done that is when routerMapping done coroutine finish.
 
         allJobs.joinAll()
 

@@ -13,10 +13,8 @@ import java.util.*
 import org.opendc.compute.workload.telemetry.SdkTelemetryManager
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import org.opendc.compute.workload.topology.HostSpec
-import org.opendc.microservice.simulator.communication.ProbCommunication
-import org.opendc.microservice.simulator.communication.RandomCommunication
+import org.opendc.microservice.simulator.routerMapping.ProbRouting
 import org.opendc.microservice.simulator.execution.EarliestDeadlineNoExe
-import org.opendc.microservice.simulator.execution.FirstComeFirstServe
 import org.opendc.microservice.simulator.execution.LogNormalExe
 import org.opendc.microservice.simulator.router.PoissonDelay
 import org.opendc.microservice.simulator.loadBalancer.*
@@ -71,7 +69,7 @@ internal class SimulatorTest {
         }
 
         val state = SimulatorState(msConfig,
-            RouterRequestGeneratorImpl(clock, ProbCommunication(listOf(0.62,0.18,0.08,0.12),1),
+            RouterRequestGeneratorImpl(ProbRouting(listOf(0.62,0.18,0.08,0.12),1),
                 LogNormalExe(6.0),
                 4),
             RoundRobinLoadBalancer(), EarliestDeadlineNoExe(),

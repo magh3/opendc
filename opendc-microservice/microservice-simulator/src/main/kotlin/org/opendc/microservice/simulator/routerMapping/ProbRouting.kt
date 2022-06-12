@@ -1,9 +1,9 @@
-package org.opendc.microservice.simulator.communication
+package org.opendc.microservice.simulator.routerMapping
 
 import org.opendc.microservice.simulator.microservice.Microservice
 import kotlin.random.Random
 
-public class ProbCommunication(private val callProb: List<Double>, private val nrOfMS: Int): CommunicationPolicy {
+public class ProbRouting(private val callProb: List<Double>, private val nrOfMS: Int): RoutingPolicy {
 
     private val normalizedProbs = normalizeProb(callProb)
 
@@ -15,7 +15,7 @@ public class ProbCommunication(private val callProb: List<Double>, private val n
 
     }
 
-    override fun communicateMs(ms: Microservice, hopsDone: Int, microservices: List<Microservice>): List<Microservice> {
+    override fun getMicroservices(caller: Microservice?, hopsDone: Int, microservices: List<Microservice>): List<Microservice> {
 
         require(microservices.isNotEmpty()){"No microservice found."}
 
@@ -32,7 +32,7 @@ public class ProbCommunication(private val callProb: List<Double>, private val n
 
                 val selectedMs = getProbMS(microservices)
 
-                if(selectedMs != ms) callMS.add(selectedMs)
+                if(selectedMs != caller) callMS.add(selectedMs)
 
             }
 

@@ -1,12 +1,11 @@
-package org.opendc.microservice.simulator.communication
+package org.opendc.microservice.simulator.routerMapping
 
 import org.opendc.microservice.simulator.microservice.Microservice
-import java.util.*
 import kotlin.random.Random
 
-public class RandomCommunication(private val nrOfMS: Int): CommunicationPolicy {
+public class RandomRouting(private val nrOfMS: Int): RoutingPolicy {
 
-    override fun communicateMs(ms: Microservice, hopsDone: Int, microservices: List<Microservice>): List<Microservice> {
+    override fun getMicroservices(caller: Microservice?, hopsDone: Int, microservices: List<Microservice>): List<Microservice> {
 
         var callMS = mutableListOf<Microservice>()
 
@@ -22,7 +21,7 @@ public class RandomCommunication(private val nrOfMS: Int): CommunicationPolicy {
 
         // should not contain self
 
-        callMS.remove(ms)
+        callMS.remove(caller)
 
         return callMS
     }

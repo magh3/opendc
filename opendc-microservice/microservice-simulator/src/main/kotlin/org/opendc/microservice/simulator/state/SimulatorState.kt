@@ -223,7 +223,7 @@ public class SimulatorState
     /**
      * each call to this function is considered as one request.
      * parameter can have duplicate microservices.
-     * Not used for communication as communication require different setting.
+     * Not used for routerMapping as routerMapping require different setting.
      */
     public suspend fun invokeMicroservices(request: RouterRequest, corScope: CoroutineScope){
 

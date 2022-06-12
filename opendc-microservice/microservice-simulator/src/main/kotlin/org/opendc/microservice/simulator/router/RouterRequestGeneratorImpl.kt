@@ -1,32 +1,27 @@
 package org.opendc.microservice.simulator.router
 
 import mu.KotlinLogging
-import org.opendc.microservice.simulator.communication.CommunicationPolicy
+import org.opendc.microservice.simulator.routerMapping.RoutingPolicy
 import org.opendc.microservice.simulator.execution.ExeDelay
 import org.opendc.microservice.simulator.microservice.Microservice
-import java.time.Clock
-import java.util.*
 import kotlin.random.Random
 
-public class RouterRequestGeneratorImpl(private val clock: Clock, private val msListGenerator: CommunicationPolicy,
-                                private val exePolicy: ExeDelay,
-                                 private val depth: Int = 1): RouterRequestGenerator {
+public class RouterRequestGeneratorImpl(private val routingPolicy: RoutingPolicy,
+                                        private val exePolicy: ExeDelay,
+                                        private val depth: Int = 1): RouterRequestGenerator {
 
     private val logger = KotlinLogging.logger {}
 
-    private val sla = 2000
 
     override fun request(microservices: List<Microservice>): RouterRequest {
 
-        val hopMSMap = mutableListOf<Map<MSRequest, List<MSRequest>>>()
+        val hopMSList = mutableListOf<Map<MSRequest, List<MSRequest>>>()
 
-        var outerMS = msListGenerator.communicateMs(Microservice(UUID.randomUUID()), 0, microservices)
+        var outerMS = routingPolicy.getMicroservices(null, 0, microservices)
 
         val reqDepth = Random.nextInt(0,depth+1)
 
         logger.debug{"making request with depth $reqDepth"}
-
-        val stageDeadline = (sla/(reqDepth+1)).toLong()
 
         // runs at least once for 0.
 
@@ -34,7 +29,7 @@ public class RouterRequestGeneratorImpl(private val clock: Clock, private val ms
 
             // comm for depth i list
 
-            val hopMap = mutableMapOf<MSRequest, List<MSRequest>>()
+            val msCommMap = mutableMapOf<MSRequest, List<MSRequest>>()
 
             val commSet = mutableSetOf<Microservice>()
 
@@ -48,15 +43,15 @@ public class RouterRequestGeneratorImpl(private val clock: Clock, private val ms
 
                 if(exeTime > maxExe) maxExe = exeTime
 
-                val metaMap = mutableMapOf<String, Any>("stageDeadline" to (clock.millis() + stageDeadline) )
+                val metaMap = mutableMapOf<String, Any>()
 
                 val commMSReqs = mutableListOf<MSRequest>()
 
                 if(i < reqDepth){
 
-                    // communication ms
+                    // routerMapping ms
 
-                    val innerMS = msListGenerator.communicateMs(ms, i, microservices)
+                    val innerMS = routingPolicy.getMicroservices(ms, i, microservices)
 
                     for(commMS in innerMS){
 
@@ -68,7 +63,7 @@ public class RouterRequestGeneratorImpl(private val clock: Clock, private val ms
 
                         val commExeTime = exePolicy.time(ms, hopDone)
 
-                        val commMeta = mutableMapOf<String, Any>("stageDeadline" to (clock.millis() + stageDeadline) )
+                        val commMeta = mutableMapOf<String, Any>()
 
                         commMSReqs.add(MSRequest(commMS, commExeTime, commMeta))
 
@@ -78,13 +73,11 @@ public class RouterRequestGeneratorImpl(private val clock: Clock, private val ms
 
                 }
 
-                    //innerMS.map { MSRequest(it, exeTime, metaMap) }
-
-                hopMap[MSRequest(ms, exeTime, metaMap)] = commMSReqs
+                msCommMap[MSRequest(ms, exeTime, metaMap)] = commMSReqs
 
             }
 
-            if(hopMap.isEmpty()) {
+            if(msCommMap.isEmpty()) {
 
                 logger.debug {"empty map breaking"}
 
@@ -92,7 +85,7 @@ public class RouterRequestGeneratorImpl(private val clock: Clock, private val ms
 
             }
 
-            hopMSMap.add(hopMap)
+            hopMSList.add(msCommMap)
 
             // map after hop zero can have only ms that were previously communicated to
 
@@ -100,6 +93,6 @@ public class RouterRequestGeneratorImpl(private val clock: Clock, private val ms
 
         }
 
-        return RouterRequest(0,hopMSMap.toList())
+        return RouterRequest(0,hopMSList.toList())
     }
 }
