@@ -16,9 +16,17 @@ public class ProbRouting(private val callProb: List<Double>, private val nrOfMS:
 
     override fun getMicroservices(caller: Microservice?, hopsDone: Int, microservices: List<Microservice>): List<Microservice> {
 
+        val leftCallProb = callProb.toMutableList()
+
+        if(caller != null && caller in microservices) leftCallProb.removeAt(microservices.toMutableList().indexOf(caller))
+
+
         var leftMicroservices = microservices
 
-        if(caller != null) leftMicroservices = microservices.filter{it != caller}
+        if(caller != null && caller in microservices) leftMicroservices = microservices.filter{it != caller}
+
+        // println("$caller ms ${leftMicroservices.size} and prob size ${leftCallProb.size} not equal")
+
 
         require(leftMicroservices.isNotEmpty()){"No microservice found."}
 
@@ -30,10 +38,6 @@ public class ProbRouting(private val callProb: List<Double>, private val nrOfMS:
         else{
 
             val callMS = mutableListOf<Microservice>()
-
-            val leftCallProb = callProb.toMutableList()
-
-            if(caller in microservices) leftCallProb.removeAt(microservices.toMutableList().indexOf(caller))
 
             val leftMSNormProb = normalizeProb(leftCallProb)
 
@@ -53,6 +57,9 @@ public class ProbRouting(private val callProb: List<Double>, private val nrOfMS:
 
 
     private fun getProbMS(leftMicroservices: List<Microservice>, leftMSNormProb: List<Double>): Microservice {
+
+        require(leftMSNormProb.size == leftMicroservices.size)
+            {"ms ${leftMicroservices.size} and prob size ${leftMSNormProb.size} not equal"}
 
         val randProb = Random.nextDouble(0.001, 1.0)
 

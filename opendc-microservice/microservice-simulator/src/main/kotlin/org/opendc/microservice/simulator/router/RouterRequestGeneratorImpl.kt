@@ -4,10 +4,12 @@ import mu.KotlinLogging
 import org.opendc.microservice.simulator.routerMapping.RoutingPolicy
 import org.opendc.microservice.simulator.execution.ExeDelay
 import org.opendc.microservice.simulator.microservice.Microservice
+import java.time.Clock
 import kotlin.random.Random
 
 public class RouterRequestGeneratorImpl(private val routingPolicy: RoutingPolicy,
                                         private val exePolicy: ExeDelay,
+                                        private val clock: Clock,
                                         private val depth: Int = 1): RouterRequestGenerator {
 
     private val logger = KotlinLogging.logger {}
@@ -25,6 +27,10 @@ public class RouterRequestGeneratorImpl(private val routingPolicy: RoutingPolicy
         val reqDepth = ProbDepthPolicy(mapOf(2 to 0.3, 3 to 0.7)).getDepth()
 
         logger.debug{"making request with depth $reqDepth"}
+
+        val sla = 2000
+
+        val stageDeadline = (sla/reqDepth).toInt()
 
         // runs at least once for 0.
 
@@ -48,7 +54,9 @@ public class RouterRequestGeneratorImpl(private val routingPolicy: RoutingPolicy
 
                 if(exeTime > maxExe) maxExe = exeTime
 
-                val metaMap = mutableMapOf<String, Any>()
+                val metaMap = mutableMapOf<String, Any>(
+                    "stageDeadline" to ((clock.millis() + stageDeadline + (currentDepth * stageDeadline)))
+                )
 
                 val commMSReqs = mutableListOf<MSRequest>()
 
@@ -70,7 +78,8 @@ public class RouterRequestGeneratorImpl(private val routingPolicy: RoutingPolicy
 
                         val commExeTime = exePolicy.time(ms, hopDone)
 
-                        val commMeta = mutableMapOf<String, Any>()
+                        val commMeta = mutableMapOf<String, Any>(
+                            "stageDeadline" to (clock.millis() + stageDeadline + (hopDone * stageDeadline)) )
 
                         commMSReqs.add(MSRequest(commMS, commExeTime, commMeta))
 
