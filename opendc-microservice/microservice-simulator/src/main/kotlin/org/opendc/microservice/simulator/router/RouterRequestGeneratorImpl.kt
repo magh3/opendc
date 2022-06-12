@@ -15,9 +15,9 @@ public class RouterRequestGeneratorImpl(private val routingPolicy: RoutingPolicy
 
     override fun request(microservices: List<Microservice>): RouterRequest {
 
-        val hopMSList = mutableListOf<Map<MSRequest, List<MSRequest>>>()
+        val hopsList = mutableListOf<Map<MSRequest, List<MSRequest>>>()
 
-        var outerMS = routingPolicy.getMicroservices(null, 0, microservices)
+        var callingMicroservices = routingPolicy.getMicroservices(null, 0, microservices)
 
         val reqDepth = Random.nextInt(0,depth+1)
 
@@ -25,7 +25,7 @@ public class RouterRequestGeneratorImpl(private val routingPolicy: RoutingPolicy
 
         // runs at least once for 0.
 
-        for(i in 0..reqDepth){
+        for(currentDepth in 0..reqDepth){
 
             // comm for depth i list
 
@@ -35,11 +35,13 @@ public class RouterRequestGeneratorImpl(private val routingPolicy: RoutingPolicy
 
             var maxExe: Long = 0
 
-            logger.debug{"outerMS is $outerMS"}
+            logger.debug{"outerMS is $callingMicroservices"}
 
-            for(ms in outerMS){
+            for(ms in callingMicroservices){
 
-                val exeTime = exePolicy.time(ms, i)
+                // generate comm microservices for each calling microservice
+
+                val exeTime = exePolicy.time(ms, currentDepth)
 
                 if(exeTime > maxExe) maxExe = exeTime
 
@@ -47,11 +49,11 @@ public class RouterRequestGeneratorImpl(private val routingPolicy: RoutingPolicy
 
                 val commMSReqs = mutableListOf<MSRequest>()
 
-                if(i < reqDepth){
+                if(currentDepth < reqDepth){
 
                     // routerMapping ms
 
-                    val innerMS = routingPolicy.getMicroservices(ms, i, microservices)
+                    val innerMS = routingPolicy.getMicroservices(ms, currentDepth, microservices)
 
                     for(commMS in innerMS){
 
@@ -59,7 +61,7 @@ public class RouterRequestGeneratorImpl(private val routingPolicy: RoutingPolicy
 
                         logger.debug{"adding comm ms: $commMS"}
 
-                        val hopDone = i+1
+                        val hopDone = currentDepth+1
 
                         val commExeTime = exePolicy.time(ms, hopDone)
 
@@ -85,14 +87,14 @@ public class RouterRequestGeneratorImpl(private val routingPolicy: RoutingPolicy
 
             }
 
-            hopMSList.add(msCommMap)
+            hopsList.add(msCommMap)
 
             // map after hop zero can have only ms that were previously communicated to
 
-            outerMS = commSet.toList()
+            callingMicroservices = commSet.toList()
 
         }
 
-        return RouterRequest(0,hopMSList.toList())
+        return RouterRequest(0,hopsList.toList())
     }
 }
