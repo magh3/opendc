@@ -5,7 +5,6 @@ import kotlin.random.Random
 
 public class ProbRouting(private val callProb: List<Double>, private val nrOfMS: Int): RoutingPolicy {
 
-    private val normalizedProbs = normalizeProb(callProb)
 
     init{
 
@@ -17,20 +16,30 @@ public class ProbRouting(private val callProb: List<Double>, private val nrOfMS:
 
     override fun getMicroservices(caller: Microservice?, hopsDone: Int, microservices: List<Microservice>): List<Microservice> {
 
-        require(microservices.isNotEmpty()){"No microservice found."}
+        var leftMicroservices = microservices
 
-        require(nrOfMS <= microservices.size){"nr of ms requested cannot be " +
+        if(caller != null) leftMicroservices = microservices.filter{it != caller}
+
+        require(leftMicroservices.isNotEmpty()){"No microservice found."}
+
+        require(nrOfMS <= leftMicroservices.size){"nr of ms requested cannot be " +
             "more than nr of ms present"}
 
-        if(microservices.size == 1) return microservices.toList()
+        if(leftMicroservices.size == 1) return leftMicroservices.toList()
 
         else{
 
             val callMS = mutableListOf<Microservice>()
 
+            val leftCallProb = callProb.toMutableList()
+
+            if(caller in microservices) leftCallProb.removeAt(microservices.toMutableList().indexOf(caller))
+
+            val leftMSNormProb = normalizeProb(leftCallProb)
+
             for(i in 1..nrOfMS){
 
-                val selectedMs = getProbMS(microservices)
+                val selectedMs = getProbMS(leftMicroservices, leftMSNormProb)
 
                 if(selectedMs != caller) callMS.add(selectedMs)
 
@@ -43,7 +52,7 @@ public class ProbRouting(private val callProb: List<Double>, private val nrOfMS:
     }
 
 
-    private fun getProbMS(microservices: List<Microservice>): Microservice {
+    private fun getProbMS(leftMicroservices: List<Microservice>, leftMSNormProb: List<Double>): Microservice {
 
         val randProb = Random.nextDouble(0.001, 1.0)
 
@@ -53,21 +62,21 @@ public class ProbRouting(private val callProb: List<Double>, private val nrOfMS:
 
         var nextProb: Double
 
-        for(i in 0..(normalizedProbs.size - 2) ){
+        for(i in 0..(leftMSNormProb.size - 2) ){
 
             // -2 because last index is at -1 and next prob end at -2
 
-            currentProb = normalizedProbs[i]
+            currentProb = leftMSNormProb[i]
 
-            nextProb = normalizedProbs[i+1]
+            nextProb = leftMSNormProb[i+1]
 
-            if(randProb >= currentProb && randProb < nextProb) return microservices[i]
+            if(randProb >= currentProb && randProb < nextProb) return leftMicroservices[i]
 
-            else if(i == normalizedProbs.size - 2) {
+            else if(i == leftMSNormProb.size - 2) {
 
                 // Last probability in list matches so return last instance
 
-                return microservices[i+1]
+                return leftMicroservices[i+1]
 
             }
 
@@ -77,7 +86,7 @@ public class ProbRouting(private val callProb: List<Double>, private val nrOfMS:
 
         print("ERROR getting MS from probability. Returning first MS")
 
-        return microservices[0]
+        return leftMicroservices[0]
 
     }
 
@@ -88,13 +97,15 @@ public class ProbRouting(private val callProb: List<Double>, private val nrOfMS:
         // list of end of each prob
         val normalizedProbs = mutableListOf<Double>()
 
+        val sum = callProb.sumByDouble { it }
+
         var partialSum = 0.0
 
         for(i in callProb.indices){
 
             normalizedProbs.add(partialSum)
 
-            partialSum += callProb[i]
+            partialSum += callProb[i] / sum
 
 
         }

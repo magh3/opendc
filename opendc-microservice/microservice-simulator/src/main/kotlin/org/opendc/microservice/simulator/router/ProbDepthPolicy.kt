@@ -3,7 +3,7 @@ package org.opendc.microservice.simulator.router
 import kotlin.random.Random
 import kotlin.time.seconds
 
-class ProbDepthPolicy(private val depthProb: Map<Int, Double>, private val maxDepth: Int): DepthPolicy {
+public class ProbDepthPolicy(private val depthProb: Map<Int, Double>): DepthPolicy {
 
 
     init{

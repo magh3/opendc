@@ -22,7 +22,7 @@ public class RouterRequestGeneratorImpl(private val routingPolicy: RoutingPolicy
 
         var callingMicroservices = routingPolicy.getMicroservices(null, 0, microservices).toSet()
 
-        val reqDepth = Random.nextInt(0,depth+1)
+        val reqDepth = ProbDepthPolicy(mapOf(2 to 0.3, 3 to 0.7)).getDepth()
 
         logger.debug{"making request with depth $reqDepth"}
 
