@@ -13,11 +13,14 @@ public class RouterRequestGeneratorImpl(private val routingPolicy: RoutingPolicy
     private val logger = KotlinLogging.logger {}
 
 
+    /**
+     * only make the request, not add meta
+     */
     override fun request(microservices: List<Microservice>): RouterRequest {
 
         val hopsList = mutableListOf<Map<MSRequest, List<MSRequest>>>()
 
-        var callingMicroservices = routingPolicy.getMicroservices(null, 0, microservices)
+        var callingMicroservices = routingPolicy.getMicroservices(null, 0, microservices).toSet()
 
         val reqDepth = Random.nextInt(0,depth+1)
 
@@ -51,11 +54,13 @@ public class RouterRequestGeneratorImpl(private val routingPolicy: RoutingPolicy
 
                 if(currentDepth < reqDepth){
 
-                    // routerMapping ms
+                    // depth is not last so can still communicate
 
-                    val innerMS = routingPolicy.getMicroservices(ms, currentDepth, microservices)
+                    // fill comm ms
 
-                    for(commMS in innerMS){
+                    val commMicroservices = routingPolicy.getMicroservices(ms, currentDepth, microservices)
+
+                    for(commMS in commMicroservices){
 
                         // hope is done when comm ms executes
 
@@ -79,19 +84,11 @@ public class RouterRequestGeneratorImpl(private val routingPolicy: RoutingPolicy
 
             }
 
-            if(msCommMap.isEmpty()) {
-
-                logger.debug {"empty map breaking"}
-
-                break
-
-            }
-
             hopsList.add(msCommMap)
 
             // map after hop zero can have only ms that were previously communicated to
 
-            callingMicroservices = commSet.toList()
+            callingMicroservices = commSet
 
         }
 

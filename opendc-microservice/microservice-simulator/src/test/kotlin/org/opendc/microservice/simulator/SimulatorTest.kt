@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import org.opendc.compute.workload.topology.HostSpec
 import org.opendc.microservice.simulator.routerMapping.ProbRouting
 import org.opendc.microservice.simulator.execution.EarliestDeadlineNoExe
+import org.opendc.microservice.simulator.execution.FirstComeFirstServe
 import org.opendc.microservice.simulator.execution.LogNormalExe
 import org.opendc.microservice.simulator.router.PoissonDelay
 import org.opendc.microservice.simulator.loadBalancer.*
@@ -72,7 +73,7 @@ internal class SimulatorTest {
             RouterRequestGeneratorImpl(ProbRouting(listOf(0.62,0.18,0.08,0.12),1),
                 LogNormalExe(6.0),
                 4),
-            RoundRobinLoadBalancer(), EarliestDeadlineNoExe(),
+            RoundRobinLoadBalancer(), FirstComeFirstServe(),
             clock, this, machineModel,
             mapper, 100000, PoissonDelay(200.0)
         )
