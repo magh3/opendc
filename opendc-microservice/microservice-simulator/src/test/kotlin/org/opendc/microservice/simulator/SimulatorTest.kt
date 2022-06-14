@@ -12,6 +12,8 @@ import org.opendc.simulator.core.runBlockingSimulation
 import java.util.*
 import org.opendc.compute.workload.telemetry.SdkTelemetryManager
 import io.opentelemetry.sdk.metrics.SdkMeterProvider
+import org.apache.commons.math3.random.RandomDataGenerator
+import org.apache.commons.math3.random.RandomGenerator
 import org.opendc.compute.workload.topology.HostSpec
 import org.opendc.microservice.simulator.routerMapping.ProbRouting
 import org.opendc.microservice.simulator.execution.EarliestDeadlineNoExe
@@ -32,6 +34,7 @@ import org.opendc.simulator.compute.power.SimplePowerDriver
 import org.opendc.simulator.compute.workload.SimFlopsWorkload
 import org.opendc.simulator.compute.workload.SimWorkload
 import java.io.File
+import kotlin.random.Random
 
 
 internal class SimulatorTest {
@@ -71,11 +74,11 @@ internal class SimulatorTest {
 
         val state = SimulatorState(msConfig,
             RouterRequestGeneratorImpl(ProbRouting(listOf(0.62,0.18,0.08,0.12),1),
-                LogNormalExe(6.0), clock,
+                LogNormalExe(-4.13, 3.48), clock,
                 4),
             RoundRobinLoadBalancer(), EarliestDeadlineNoExe(),
             clock, this, machineModel,
-            mapper, 100000, PoissonDelay(200.0)
+            mapper, (1000*3600*2), PoissonDelay(1066.0)
         )
 
         state.run()

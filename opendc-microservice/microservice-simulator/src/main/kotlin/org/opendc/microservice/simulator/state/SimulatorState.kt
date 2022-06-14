@@ -57,13 +57,13 @@ public class SimulatorState
 
     private val logger = KotlinLogging.logger {}
 
-    private var exeTimeStat = DescriptiveStatistics()// .apply{ windowSize = 100 }
+    private var exeTimeStat = DescriptiveStatistics().apply{ windowSize = 100 }
 
-    private val queueTimeStat = DescriptiveStatistics()// .apply{ windowSize = 100 }
+    private val queueTimeStat = DescriptiveStatistics().apply{ windowSize = 100 }
 
-    private val totalTimeStat = DescriptiveStatistics()// .apply{ windowSize = 100 }
+    private val totalTimeStat = DescriptiveStatistics().apply{ windowSize = 100 }
 
-    private val slowDownStat = DescriptiveStatistics()// .apply{ windowSize = 100 }
+    private val slowDownStat = DescriptiveStatistics().apply{ windowSize = 100 }
 
     init{
 
@@ -204,6 +204,8 @@ public class SimulatorState
 
         logger.info { getStats() }
 
+        // registryManager.getMicroservices().apply{logger.info{it.getStats()}
+
         val myCollection = registryManager.getInstances()
 
         val iterator = myCollection.iterator()
@@ -243,6 +245,8 @@ public class SimulatorState
 
         for (msReq in msRequests) {
 
+            msReq.getMS().saveExeTime(msReq.getExeTime())
+
             totalInvocations += 1
 
             requestJobs.add(corScope.launch {
@@ -265,7 +269,7 @@ public class SimulatorState
 
         queueTimeStat.addValue(waitTime.toDouble())
 
-        totalTimeStat.addValue(totalTime.toDouble())
+        totalTimeStat.addValue(totalTime.toDouble()/1000)
 
         slowDownStat.addValue(((msExeTime+waitTime)/msExeTime).toDouble() )
 

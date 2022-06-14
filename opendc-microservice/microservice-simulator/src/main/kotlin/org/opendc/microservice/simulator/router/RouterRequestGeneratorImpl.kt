@@ -28,9 +28,9 @@ public class RouterRequestGeneratorImpl(private val routingPolicy: RoutingPolicy
 
         logger.debug{"making request with depth $reqDepth"}
 
-        val sla = 2000
+        val sla = 4000
 
-        val stageDeadline = (sla/reqDepth).toInt()
+        val stageDeadline = (sla/(reqDepth+1)).toInt()
 
         // runs at least once for 0.
 
