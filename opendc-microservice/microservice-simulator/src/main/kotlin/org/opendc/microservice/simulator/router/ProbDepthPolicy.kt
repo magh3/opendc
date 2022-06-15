@@ -14,12 +14,14 @@ public class ProbDepthPolicy(private val depthProb: Map<Int, Double>): DepthPoli
 
     }
 
+    private val randGene = Random(0)
+
 
     override fun getDepth(): Int {
 
         if(depthProb.size == 1) return depthProb.keys.toList()[0]
 
-        val randProb = Random.nextDouble(0.001, 1.0)
+        val randProb = randGene.nextDouble(0.001, 1.0)
 
         // there are at least 2 keys in map, so at least 2 probs
 

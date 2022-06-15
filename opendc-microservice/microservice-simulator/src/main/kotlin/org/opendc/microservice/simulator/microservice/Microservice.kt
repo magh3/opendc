@@ -19,9 +19,9 @@ public class Microservice(private val id: UUID){
 
     }
 
-    public fun getStats(): Double {
+    public fun getUtilization(): Double {
 
-        return exeTimeStat.values.sum()/2*(1000*3600*2)*2
+        return exeTimeStat.values.sum()/(2*(1000*3600*2))
 
     }
 

@@ -56,12 +56,13 @@ public class ProbRouting(private val callProb: List<Double>, private val nrOfMS:
     }
 
 
+    private val randGene = Random(0)
+
+
     private fun getProbMS(leftMicroservices: List<Microservice>, leftMSNormProb: List<Double>): Microservice {
 
         require(leftMSNormProb.size == leftMicroservices.size)
             {"ms ${leftMicroservices.size} and prob size ${leftMSNormProb.size} not equal"}
-
-        val randProb = Random.nextDouble(0.001, 1.0)
 
         // there are at least 2 ms, so at least 2 probs
 
@@ -76,6 +77,10 @@ public class ProbRouting(private val callProb: List<Double>, private val nrOfMS:
             currentProb = leftMSNormProb[i]
 
             nextProb = leftMSNormProb[i+1]
+
+            val randProb = randGene.nextDouble(0.001, 1.0)
+
+            // println(" random number is $randProb")
 
             if(randProb >= currentProb && randProb < nextProb) return leftMicroservices[i]
 

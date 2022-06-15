@@ -57,13 +57,13 @@ public class SimulatorState
 
     private val logger = KotlinLogging.logger {}
 
-    private var exeTimeStat = DescriptiveStatistics().apply{ windowSize = 100 }
+    private var exeTimeStat = DescriptiveStatistics()// .apply{ windowSize = 100 }
 
-    private val queueTimeStat = DescriptiveStatistics().apply{ windowSize = 100 }
+    private val queueTimeStat = DescriptiveStatistics()// .apply{ windowSize = 100 }
 
-    private val totalTimeStat = DescriptiveStatistics().apply{ windowSize = 100 }
+    private val totalTimeStat = DescriptiveStatistics()//.apply{ windowSize = 100 }
 
-    private val slowDownStat = DescriptiveStatistics().apply{ windowSize = 100 }
+    private val slowDownStat = DescriptiveStatistics()//.apply{ windowSize = 100 }
 
     init{
 
@@ -204,7 +204,7 @@ public class SimulatorState
 
         logger.info { getStats() }
 
-        // registryManager.getMicroservices().apply{logger.info{it.getStats()}
+        registryManager.getMicroservices().map{logger.info{"${it.getId()} - ${it.getUtilization()} "}}
 
         val myCollection = registryManager.getInstances()
 

@@ -185,6 +185,8 @@ public class MSInstance(private val ms: Microservice,
 
                     queue = simState.getQueuePolicy().getEntry(queue) as ArrayDeque<InvocationRequest>
 
+                    // queue.map{println(it.msReq.getMeta()["stageDeadline"])}
+
                     val queueEntry = queue.poll()
 
                     logger.debug { "choosed req with deadline ${queueEntry.msReq.getMeta()["stageDeadline"]}" }

@@ -8,11 +8,12 @@ import java.util.*
 
 public class LogNormalExe(private val m:Double =0.0, private val s:Double =1.0): ExeDelay {
 
+    private val randGen = RandomDataGenerator(RandomGeneratorFactory.createRandomGenerator(Random(0))).randomGenerator
+
+    private val logNormal = LogNormalDistribution(randGen, m, s)
+
+
     override fun time(ms: Microservice, hop: Int): Long {
-
-        val randGen = RandomDataGenerator(RandomGeneratorFactory.createRandomGenerator(Random(0))).randomGenerator
-
-        val logNormal = LogNormalDistribution(randGen, m, s)
 
         var exeTime = logNormal.sample().toLong()
 
