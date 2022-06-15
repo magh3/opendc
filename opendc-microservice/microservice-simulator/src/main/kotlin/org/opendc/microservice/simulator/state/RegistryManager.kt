@@ -31,6 +31,13 @@ public class RegistryManager(){
 
     }
 
+
+    public fun getInstances(ms: Microservice): List<MSInstance> {
+
+        return registry.filter{it.getMSId() == ms.getId()}
+
+    }
+
     public fun getMicroservices(): MutableList<Microservice> {
 
         return microservices

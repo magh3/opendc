@@ -23,6 +23,7 @@ import org.opendc.microservice.simulator.router.PoissonDelay
 import org.opendc.microservice.simulator.loadBalancer.*
 import org.opendc.microservice.simulator.microservice.MSInstance
 import org.opendc.microservice.simulator.microservice.MSConfigGenerator
+import org.opendc.microservice.simulator.microservice.MSConfiguration
 import org.opendc.microservice.simulator.router.RouterRequestGeneratorImpl
 import org.opendc.microservice.simulator.state.SimulatorState
 import org.opendc.microservice.simulator.trace.MSTraceReader
@@ -55,11 +56,15 @@ internal class SimulatorTest {
     @Test
     fun runMiniSim() = runBlockingSimulation {
 
-        val msConfig = MSConfigGenerator().generate(4,2)
+        // val msConfig = MSConfigGenerator().generate(4,2)
 
-            // mutableListOf<MSConfiguration>(
-            // MSConfiguration(UUID.randomUUID(), listOf(UUID.randomUUID())),
-            // MSConfiguration(UUID.randomUUID(), listOf(UUID.randomUUID(), UUID.randomUUID())) )
+        val msConfig = mutableListOf<MSConfiguration>(
+            MSConfiguration(UUID.randomUUID(),
+                listOf(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+                    UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID())),
+            MSConfiguration(UUID.randomUUID(), listOf(UUID.randomUUID())) ,
+            MSConfiguration(UUID.randomUUID(), listOf(UUID.randomUUID())) ,
+            MSConfiguration(UUID.randomUUID(), listOf(UUID.randomUUID(), UUID.randomUUID())) )
 
         val workload = spyk(object : MSWorkload, SimWorkload by SimFlopsWorkload(1000) {
             override suspend fun invoke() {
@@ -76,9 +81,9 @@ internal class SimulatorTest {
             RouterRequestGeneratorImpl(ProbRouting(listOf(0.62,0.18,0.08,0.12),1),
                 LogNormalExe(-4.13, 3.48), clock,
                 4),
-            RoundRobinLoadBalancer(), EarliestDeadlineNoExe(),
+            RoundRobinLoadBalancer(), FirstComeFirstServe(),
             clock, this, machineModel,
-            mapper, (1000*3600*2), PoissonDelay(1066.0)
+            mapper, (1000*3600*6), PoissonDelay(1066.0)
         )
 
         state.run()
@@ -101,9 +106,9 @@ internal class SimulatorTest {
     @Test
     fun exeTimes(){
 
-        val time = LogNormalExe(-0.38, 2.36).time(Microservice(UUID.randomUUID()),0)
+        //val time = LogNormalExe(-0.38, 2.36).time(Microservice(UUID.randomUUID()),0)
 
-        println(time)
+        //println(time)
 
     }
 
@@ -116,9 +121,9 @@ internal class SimulatorTest {
         // val meterProvider = telemetry.createMeterProvider(createHostSpec(1))
         val meterProvider = SdkMeterProvider.builder()
 
-        val microservice = Microservice(UUID.randomUUID())
+        //val microservice = Microservice(UUID.randomUUID())
 
-        println(microservice.getId())
+        // println(microservice.getId())
 
         assert(true)
 

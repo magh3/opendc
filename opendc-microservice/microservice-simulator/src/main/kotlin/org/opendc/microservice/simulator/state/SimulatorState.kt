@@ -57,13 +57,13 @@ public class SimulatorState
 
     private val logger = KotlinLogging.logger {}
 
-    private var exeTimeStat = DescriptiveStatistics()// .apply{ windowSize = 100 }
+    private var exeTimeStat = DescriptiveStatistics().apply{ windowSize = 100 }
 
-    private val queueTimeStat = DescriptiveStatistics()// .apply{ windowSize = 100 }
+    private val queueTimeStat = DescriptiveStatistics().apply{ windowSize = 100 }
 
-    private val totalTimeStat = DescriptiveStatistics()//.apply{ windowSize = 100 }
+    private val totalTimeStat = DescriptiveStatistics().apply{ windowSize = 100 }
 
-    private val slowDownStat = DescriptiveStatistics()//.apply{ windowSize = 100 }
+    private val slowDownStat = DescriptiveStatistics().apply{ windowSize = 100 }
 
     init{
 
@@ -85,7 +85,7 @@ public class SimulatorState
 
             // make ms
 
-            ms = Microservice((config.getId()))
+            ms = Microservice((config.getId()), registryManager, lastReqTime)
 
             registryManager.addMs(ms)
 
@@ -122,6 +122,8 @@ public class SimulatorState
 
                         launch {
 
+                            val entryRef = queueEntry
+
                             val startTime = clock.millis()
 
                             val exeTime = loadBalancer.instance(queueEntry.msReq.getMS(), registryManager.getInstances()).
@@ -129,7 +131,7 @@ public class SimulatorState
 
                             // resumes when above instance invoke finishes
 
-                            queueEntry.cont.resume(exeTime)
+                            entryRef.cont.resume(exeTime)
 
                             logger.debug{"--------------finished request startTime was $startTime"}
 
@@ -164,17 +166,15 @@ public class SimulatorState
      */
     suspend public fun run(){
 
-        var callMS: List<Microservice>
-
-        var requests: List<MSRequest>
-
         var nextReqDelay: Long
 
-        val allJobs = mutableListOf<Job>()
+        var allJobs = mutableListOf<Job>()
 
         // time loop
 
             while (clock.millis() < lastReqTime) {
+
+                allJobs = allJobs.filter{it.isActive} as MutableList<Job>
 
                 // get request
 
@@ -182,21 +182,38 @@ public class SimulatorState
 
                 require(request.getHopMSMap().isNotEmpty()){"Empty request Map"}
 
+                // print("${allJobs.size}, ")
+
+                // println(allJobs.size)
+
                 logger.debug{request}
 
                 nextReqDelay = interArrivalDelay.time()
 
                 // invoke loop
 
-                allJobs.add(scope.launch {
+                try {
 
-                    invokeMicroservices(request, this)
+                    allJobs.add(scope.launch {
 
-                })
+                        invokeMicroservices(request, this)
+
+                    })
+
+                }
+                catch(e: OutOfMemoryError){
+
+                    println("out of memory error $e")
+
+                    break
+
+                }
 
                 delay(nextReqDelay)
 
         }
+
+        println("All requests sent waiting for join")
 
         allJobs.joinAll()
 

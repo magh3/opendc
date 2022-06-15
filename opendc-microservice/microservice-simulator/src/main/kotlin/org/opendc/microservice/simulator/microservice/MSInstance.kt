@@ -171,7 +171,7 @@ public class MSInstance(private val ms: Microservice,
 
             }
 
-            val allJobs = mutableListOf<Job>()
+            var allJobs = mutableListOf<Job>()
 
             while (isActive) {
                 if (queue.isEmpty()) {
@@ -180,6 +180,8 @@ public class MSInstance(private val ms: Microservice,
 
 
                 while (queue.isNotEmpty()) {
+
+                    allJobs = allJobs.filter{it.isActive} as MutableList<Job>
 
                     state = InstanceState.Active
 
