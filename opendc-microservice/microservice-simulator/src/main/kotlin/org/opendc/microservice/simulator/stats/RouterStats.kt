@@ -19,4 +19,11 @@ public class RouterStats(private val exeTimeStats: DescriptiveStatistics,
 
     }
 
+
+    public fun getTotalTimes(): List<Double> {
+
+        return totalTimeStats.values.toList()
+
+    }
+
 }

@@ -202,7 +202,13 @@ public class SimulatorState
 
         stop()
 
-        logger.info { getStats() }
+        val routerStats = getStats()
+
+        logger.info { routerStats }
+
+        val slaVoilations = routerStats.getTotalTimes().filter{it > 4000.0}.size
+
+        logger.info{"Total sla voilations = $slaVoilations"}
 
         registryManager.getMicroservices().map{logger.info{"${it.getId()} - ${it.getUtilization()} "}}
 
