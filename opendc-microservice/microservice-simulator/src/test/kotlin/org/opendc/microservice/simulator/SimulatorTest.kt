@@ -89,7 +89,7 @@ internal class SimulatorTest {
                 4),
             RoundRobinLoadBalancer(), FirstComeFirstServe(),
             clock, this, machineModel,
-            mapper, (1000*3600*8).toLong(), PoissonDelay(1066.0)
+            mapper, (1000*3600*13).toLong(), PoissonDelay(1066.0)
         )
 
         state.run()

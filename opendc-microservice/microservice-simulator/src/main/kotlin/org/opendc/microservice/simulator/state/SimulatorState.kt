@@ -174,11 +174,29 @@ public class SimulatorState
 
         var count = 0
 
+        val oneHr = 1*3600*1000
+
+        var utilizationCheckTime = oneHr
+
         // time loop
 
             while (clock.millis() < lastReqTime) {
 
                 // println("filtering..")
+
+                if(clock.millis() > utilizationCheckTime){
+
+                    println("${clock.millis()} setting utilization")
+
+                    // add utilization
+
+                    registryManager.getMicroservices().map{it.setUtilization()}
+
+                    // update timer
+
+                    utilizationCheckTime += oneHr
+
+                }
 
                 count += 1
 
@@ -246,7 +264,7 @@ public class SimulatorState
 
         logger.info{"Total sla voilations = $slaVoilations"}
 
-        registryManager.getMicroservices().map{logger.info{"${it.getId()} - ${it.getUtilization()} "}}
+        registryManager.getMicroservices().map{logger.info{"${it.getId()} -  ${it.getUtilization().contentToString()} so mean is ${it.getUtilization().average()}"}}
 
         val myCollection = registryManager.getInstances()
 

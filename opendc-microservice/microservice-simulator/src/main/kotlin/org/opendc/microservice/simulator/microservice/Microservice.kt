@@ -11,6 +11,8 @@ public class Microservice(private val id: UUID, private val registryManager: Reg
 
     private var exeTimeStat: Long = 0
 
+    private val utilization = DescriptiveStatistics()// .apply{ windowSize = 100 }
+
     private val logger = KotlinLogging.logger {}
 
     public fun getId(): UUID {
@@ -21,25 +23,33 @@ public class Microservice(private val id: UUID, private val registryManager: Reg
 
     public fun saveExeTime(exeTime: Long){
 
-        val nrOfInstances = registryManager.getInstances(this).size
-
-        val utilization = exeTimeStat.toDouble()/(nrOfInstances * clock.millis())
-
-        if(utilization > 1.0) println("for ms ${getId()} utilization  is $utilization")
-
         exeTimeStat += exeTime
 
     }
 
-    public fun getUtilization(): Double {
+
+    public fun setUtilization(){
 
         val nrOfInstances = registryManager.getInstances(this).size
 
-        logger.debug { "MS: ${getId()} has $nrOfInstances instances" }
+        utilization.addValue(exeTimeStat.toDouble()/(nrOfInstances * 1 * 3600 * 1000))
+
+        exeTimeStat = 0
+
+    }
+
+
+    public fun getUtilization(): DoubleArray {
+
+        // val nrOfInstances = registryManager.getInstances(this).size
+
+        // logger.debug { "MS: ${getId()} has $nrOfInstances instances" }
 
         // println("${getId()} total exe time is $exeTimeStat")
 
-        return exeTimeStat.toDouble()/ (nrOfInstances * simDuration)
+        // return exeTimeStat.toDouble()/ (nrOfInstances * simDuration)
+
+        return utilization.values
 
     }
 
