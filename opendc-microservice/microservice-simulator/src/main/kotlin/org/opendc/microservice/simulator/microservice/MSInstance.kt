@@ -192,7 +192,7 @@ public class MSInstance(private val ms: Microservice,
                     val queueEntry = queue.poll()
 
                     // if(queue.size > 500)
-                    println("____Queue size ${queue.size} at instance ${getId()} ms ${getMSId()}")
+                    // println("____Queue size ${queue.size} at instance ${getId()} ms ${getMSId()}")
 
                     // println("queue size ${queue.size +1}, choosed req with deadline ${queueEntry.msReq.getMeta()["stageDeadline"]}" )
 

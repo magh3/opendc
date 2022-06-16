@@ -67,6 +67,10 @@ public class SimulatorState
 
     private val slowDownStat = DescriptiveStatistics().apply{ windowSize = 100 }
 
+    private var slaVoilations = 0
+
+    private val sla = 4000
+
     init{
 
         initializeMS()
@@ -214,7 +218,7 @@ public class SimulatorState
 
                 // println("total requests: $count")
 
-                println("${clock.millis()} - request remaining: ${allJobs.size}")
+                // println("${clock.millis()} - request remaining: ${allJobs.size}")
 
                 logger.debug{request}
 
@@ -242,10 +246,10 @@ public class SimulatorState
 
                         // }
 
-                        println("Request completed memory free is " +
-                            formatSize(Runtime.getRuntime().freeMemory()) + " / " +
-                            formatSize(Runtime.getRuntime().maxMemory())
-                        )
+                        // println("Request completed memory free is " +
+                        //     formatSize(Runtime.getRuntime().freeMemory()) + " / " +
+                        //     formatSize(Runtime.getRuntime().maxMemory())
+                        // )
 
                     })
 
@@ -275,7 +279,7 @@ public class SimulatorState
 
         logger.info { routerStats }
 
-        val slaVoilations = routerStats.getTotalTimes().filter{it > 4000.0}.size
+        // val slaVoilations = routerStats.getTotalTimes().filter{it > 4000.0}.size
 
         logger.info{"Total sla voilations = $slaVoilations"}
 
@@ -346,6 +350,8 @@ public class SimulatorState
         val endTime = clock.millis()
 
         val totalTime = endTime - startTime
+
+        if(totalTime > sla) slaVoilations += 1
 
         val waitTime = totalTime - msExeTime
 

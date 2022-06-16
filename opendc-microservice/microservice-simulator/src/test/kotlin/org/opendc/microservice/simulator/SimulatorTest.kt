@@ -87,7 +87,7 @@ internal class SimulatorTest {
             RouterRequestGeneratorImpl(ProbRouting(listOf(0.62,0.18,0.08,0.12),1),
                 LogNormalExe(-4.13, 3.48), clock,
                 4),
-            RoundRobinLoadBalancer(), FirstComeFirstServe(),
+            RoundRobinLoadBalancer(), EarliestDeadlineNoExe(),
             clock, this, machineModel,
             mapper, (1000*3600*24).toLong(), PoissonDelay(1066.0)
         )
