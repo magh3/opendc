@@ -30,7 +30,7 @@ public class SimulatorState
      private val scope: CoroutineScope,
      private val model: MachineModel,
      private val mapper: MSWorkloadMapper,
-     private val lastReqTime: Int,
+     private val lastReqTime: Long,
      private val interArrivalDelay: InterArrivalDelay
 ) {
 
@@ -85,7 +85,7 @@ public class SimulatorState
 
             // make ms
 
-            ms = Microservice((config.getId()), registryManager, lastReqTime)
+            ms = Microservice((config.getId()), registryManager, clock, lastReqTime)
 
             registryManager.addMs(ms)
 
@@ -119,6 +119,8 @@ public class SimulatorState
                     val queueEntry = queue.poll()
 
                     try {
+
+                        // launch coroutine to call microservice and wait for its communications
 
                         launch {
 
@@ -170,9 +172,15 @@ public class SimulatorState
 
         var allJobs = mutableListOf<Job>()
 
+        var count = 0
+
         // time loop
 
             while (clock.millis() < lastReqTime) {
+
+                // println("filtering..")
+
+                count += 1
 
                 allJobs = allJobs.filter{it.isActive} as MutableList<Job>
 
@@ -184,7 +192,9 @@ public class SimulatorState
 
                 // print("${allJobs.size}, ")
 
-                // println(allJobs.size)
+                // println("total requests: $count")
+
+                println("${clock.millis()} - request remaining: ${allJobs.size}")
 
                 logger.debug{request}
 
@@ -194,16 +204,23 @@ public class SimulatorState
 
                 try {
 
+                    // launch coroutine to wait for full request to finish
+                    // named as full request coroutine
+
                     allJobs.add(scope.launch {
 
-                        invokeMicroservices(request, this)
+                        //withTimeout(100000){
+
+                            invokeMicroservices(request, this)
+
+                        // }
 
                     })
 
                 }
                 catch(e: OutOfMemoryError){
 
-                    println("out of memory error $e")
+                    logger.error {"out of memory error $e"}
 
                     break
 
@@ -216,6 +233,8 @@ public class SimulatorState
         println("All requests sent waiting for join")
 
         allJobs.joinAll()
+
+        println("END TIME ${clock.millis()}")
 
         stop()
 
@@ -268,9 +287,11 @@ public class SimulatorState
 
         for (msReq in msRequests) {
 
-            msReq.getMS().saveExeTime(msReq.getExeTime())
+            // msReq.getMS().saveExeTime(msReq.getExeTime())
 
             totalInvocations += 1
+
+            // launch coroutine to invoke individual microservices from the request
 
             requestJobs.add(corScope.launch {
 
@@ -322,7 +343,13 @@ public class SimulatorState
 
     public suspend fun invoke(msReq: MSRequest, request: RouterRequest): Int {
 
+        // println("hop is " + request.getHops())
+
+        msReq.getMS().saveExeTime(msReq.getExeTime())
+
         logger.debug{"Current invoke for ms ${msReq.getMS().getId()}, hop is " + request.getHops()}
+
+        // suspend the individual ms invoke coroutine
 
         return suspendCancellableCoroutine { cont ->
             queue.add(MSQRequest(cont, msReq, request))

@@ -56,15 +56,21 @@ internal class SimulatorTest {
     @Test
     fun runMiniSim() = runBlockingSimulation {
 
-        // val msConfig = MSConfigGenerator().generate(4,2)
+        // val msConfig = MSConfigGenerator().generate(4,200)
 
         val msConfig = mutableListOf<MSConfiguration>(
+
             MSConfiguration(UUID.randomUUID(),
                 listOf(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
                     UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID())),
+
+            MSConfiguration(UUID.randomUUID(), listOf(UUID.randomUUID(), UUID.randomUUID(),
+                UUID.randomUUID())) ,
+
             MSConfiguration(UUID.randomUUID(), listOf(UUID.randomUUID())) ,
-            MSConfiguration(UUID.randomUUID(), listOf(UUID.randomUUID())) ,
-            MSConfiguration(UUID.randomUUID(), listOf(UUID.randomUUID(), UUID.randomUUID())) )
+
+            MSConfiguration(UUID.randomUUID(), listOf(UUID.randomUUID(), UUID.randomUUID(),
+                UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID())) )
 
         val workload = spyk(object : MSWorkload, SimWorkload by SimFlopsWorkload(1000) {
             override suspend fun invoke() {
@@ -83,7 +89,7 @@ internal class SimulatorTest {
                 4),
             RoundRobinLoadBalancer(), FirstComeFirstServe(),
             clock, this, machineModel,
-            mapper, (1000*3600*6), PoissonDelay(1066.0)
+            mapper, (1000*3600*8).toLong(), PoissonDelay(1066.0)
         )
 
         state.run()

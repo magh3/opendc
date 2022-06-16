@@ -191,7 +191,9 @@ public class MSInstance(private val ms: Microservice,
 
                     val queueEntry = queue.poll()
 
-                    logger.debug { "choosed req with deadline ${queueEntry.msReq.getMeta()["stageDeadline"]}" }
+                    if(queue.size > 500) println("____Queue size ${queue.size} at instance ${getId()} ms ${getMSId()}")
+
+                    // println("queue size ${queue.size +1}, choosed req with deadline ${queueEntry.msReq.getMeta()["stageDeadline"]}" )
 
                     val exeTime = queueEntry.msReq.getExeTime()
 

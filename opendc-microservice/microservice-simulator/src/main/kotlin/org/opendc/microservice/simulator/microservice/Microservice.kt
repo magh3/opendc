@@ -3,12 +3,13 @@ package org.opendc.microservice.simulator.microservice
 import mu.KotlinLogging
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics
 import org.opendc.microservice.simulator.state.RegistryManager
+import java.time.Clock
 import java.util.*
 
 public class Microservice(private val id: UUID, private val registryManager: RegistryManager,
-                          private val simDuration: Int){
+                          private val clock: Clock, private val simDuration: Long){
 
-    private var exeTimeStat = DescriptiveStatistics()// .apply{ windowSize = 100 }
+    private var exeTimeStat: Long = 0
 
     private val logger = KotlinLogging.logger {}
 
@@ -20,7 +21,13 @@ public class Microservice(private val id: UUID, private val registryManager: Reg
 
     public fun saveExeTime(exeTime: Long){
 
-        exeTimeStat.addValue(exeTime.toDouble())
+        val nrOfInstances = registryManager.getInstances(this).size
+
+        val utilization = exeTimeStat.toDouble()/(nrOfInstances * clock.millis())
+
+        if(utilization > 1.0) println("for ms ${getId()} utilization  is $utilization")
+
+        exeTimeStat += exeTime
 
     }
 
@@ -30,7 +37,9 @@ public class Microservice(private val id: UUID, private val registryManager: Reg
 
         logger.debug { "MS: ${getId()} has $nrOfInstances instances" }
 
-        return exeTimeStat.values.sum()/(nrOfInstances * simDuration)
+        // println("${getId()} total exe time is $exeTimeStat")
+
+        return exeTimeStat.toDouble()/ (nrOfInstances * simDuration)
 
     }
 
