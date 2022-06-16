@@ -5,9 +5,11 @@ import kotlinx.coroutines.channels.Channel
 import mu.KotlinLogging
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics
 import org.opendc.microservice.simulator.execution.QueuePolicy
-import org.opendc.microservice.simulator.router.InterArrivalDelay
 import org.opendc.microservice.simulator.loadBalancer.LoadBalancer
-import org.opendc.microservice.simulator.microservice.*
+import org.opendc.microservice.simulator.microservice.MSConfiguration
+import org.opendc.microservice.simulator.microservice.MSInstanceDeployer
+import org.opendc.microservice.simulator.microservice.Microservice
+import org.opendc.microservice.simulator.router.InterArrivalDelay
 import org.opendc.microservice.simulator.router.MSRequest
 import org.opendc.microservice.simulator.router.RouterRequest
 import org.opendc.microservice.simulator.router.RouterRequestGenerator
@@ -227,13 +229,26 @@ public class SimulatorState
 
                     allJobs.add(scope.launch {
 
-                        //withTimeout(100000){
+                        // try {
+                            // withTimeout((1000 * 3600).toLong()) {
 
-                            invokeMicroservices(request, this)
+                                invokeMicroservices(request, this)
+
+                            // }
+                        // }
+                        // catch(t: TimeoutCancellationException){
+
+                        //     println("request timeout ")
 
                         // }
 
+                        println("Request completed memory free is " +
+                            formatSize(Runtime.getRuntime().freeMemory()) + " / " +
+                            formatSize(Runtime.getRuntime().maxMemory())
+                        )
+
                     })
+
 
                 }
                 catch(e: OutOfMemoryError){
@@ -279,6 +294,13 @@ public class SimulatorState
             item.close()
         }
 
+    }
+
+
+    public fun formatSize(v: Long): String {
+        if (v < 1024) return "$v B"
+        val z = (63 - java.lang.Long.numberOfLeadingZeros(v)) / 10
+        return String.format("%.1f %sB", v.toDouble() / (1L shl z * 10), " KMGTPE"[z])
     }
 
 
