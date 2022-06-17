@@ -56,9 +56,9 @@ public class RouterRequestGeneratorImpl(private val routingPolicy: RoutingPolicy
 
                 if(exeTime > maxExe) maxExe = exeTime
 
-                val metaMap = mutableMapOf<String, Any>(
+                val metaMap = mutableMapOf<String, Any>() /*(
                     "stageDeadline" to ((clock.millis() + ( (currentDepth+1) * stageDeadline)))
-                )
+                )*/
 
                 val commMSReqs = mutableListOf<MSRequest>()
 
@@ -80,8 +80,9 @@ public class RouterRequestGeneratorImpl(private val routingPolicy: RoutingPolicy
 
                         val commExeTime = exePolicy.time(ms, hopDone)
 
-                        val commMeta = mutableMapOf<String, Any>(
-                            "stageDeadline" to (clock.millis() + ((hopDone+1) * stageDeadline)) )
+                        val commMeta = mutableMapOf<String, Any>()
+                        /*(
+                            "stageDeadline" to (clock.millis() + ((hopDone+1) * stageDeadline)) ) */
 
                         commMSReqs.add(MSRequest(commMS, commExeTime, commMeta))
 

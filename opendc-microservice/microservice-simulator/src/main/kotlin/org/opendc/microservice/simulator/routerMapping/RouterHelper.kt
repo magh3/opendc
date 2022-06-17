@@ -3,12 +3,45 @@ package org.opendc.microservice.simulator.routerMapping
 import mu.KotlinLogging
 import org.opendc.microservice.simulator.router.MSRequest
 import org.opendc.microservice.simulator.router.RouterRequest
+import java.time.Clock
 
 public class RouterHelper {
 
     private val logger = KotlinLogging.logger {}
 
-    public fun setExeBasedDeadline(request: RouterRequest, sla: Int){
+
+    public fun setEqualSlackExeDeadline(request: RouterRequest, sla: Int, clock: Clock){
+
+        // hops start from zero, size start from 1 so we do -1 from size
+
+        val nrOfHops = request.getHopMSMap().size - 1
+
+        // if depth is 2 then there are 3 microservices involved so 3 stages (totalHops+1)
+
+        val stageDeadline = sla/(nrOfHops+1)
+
+        val slackDistribution = mutableListOf<Int>()
+
+        for(i in 0..(nrOfHops+1)){
+
+            // slack is divided equally
+
+            slackDistribution.add(stageDeadline)
+
+        }
+
+        val deadlines = getDeadlines(slackDistribution, clock)
+
+        logger.debug { "given sla $sla slack distribution is $slackDistribution" }
+
+        // set slack for all hops
+
+        setSlackAllHops(deadlines, request.getHopMSMap())
+
+    }
+
+
+    public fun setExeBasedDeadline(request: RouterRequest, sla: Int, clock: Clock){
 
         // get list of max exe time for each hop
 
@@ -18,22 +51,51 @@ public class RouterHelper {
 
         val slackDistribution = maxExeOfHops.map{((it/maxExeOfHops.sum())*sla).toInt() }
 
+        // distribution to deadlines
+
+        val deadlines = getDeadlines(slackDistribution, clock)
+
         logger.debug { "given sla $sla slack distribution is $slackDistribution" }
 
         // set slack for all hops
 
-        setSlackAllHops(slackDistribution, request.getHopMSMap())
+        setSlackAllHops(deadlines, request.getHopMSMap())
 
     }
 
 
-    private fun setSlackAllHops(exeTimesOfHops: List<Int>, requestMap: List<Map<MSRequest, List<MSRequest>>>){
+    private fun getDeadlines(slackDistribution: List<Int>, clock: Clock): List<Long> {
+
+        val deadlines = mutableListOf<Long>()
+
+        for(hop in slackDistribution.indices){
+
+            // if hop is 1 deadline is sum of index 0 and 1
+
+            var hopDeadline: Long = clock.millis()
+
+            for(i in 0..hop){
+
+                hopDeadline += slackDistribution[i]
+
+            }
+
+            deadlines.add(hopDeadline)
+
+        }
+
+        return deadlines.toList()
+
+    }
+
+
+    private fun setSlackAllHops(exeTimesOfHops: List<Long>, requestMap: List<Map<MSRequest, List<MSRequest>>>){
 
         require(exeTimesOfHops.size == requestMap.size){"ERROR setting exe times"}
 
         for(i in requestMap.indices){
 
-            setSlackForHop(exeTimesOfHops[i].toLong(), requestMap[i])
+            setSlackForHop(exeTimesOfHops[i], requestMap[i])
 
         }
 
@@ -42,7 +104,7 @@ public class RouterHelper {
 
     private fun setSlackForHop(slackTime: Long, hopMap: Map<MSRequest, List<MSRequest>>){
 
-        // get reqs at that hop
+        // get requests at that hop
 
         val msRequests = hopMap.keys
 
