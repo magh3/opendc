@@ -210,7 +210,7 @@ public class SimulatorState
 
                 val request = requestGenerator.request(registryManager.getMicroservices())
 
-                RouterHelper().setExeBasedDeadline(request, sla)
+                // RouterHelper().setExeBasedDeadline(request, sla)
 
                 require(request.getHopMSMap().isNotEmpty()){"Empty request Map"}
 

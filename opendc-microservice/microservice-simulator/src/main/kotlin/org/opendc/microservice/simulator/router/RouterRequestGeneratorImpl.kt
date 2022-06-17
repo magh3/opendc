@@ -30,6 +30,8 @@ public class RouterRequestGeneratorImpl(private val routingPolicy: RoutingPolicy
 
         val sla = 4000
 
+        // if depth is 2 then there are 3 microservices involved so 3 stages
+
         val stageDeadline = (sla/(reqDepth+1)).toInt()
 
         // runs at least once for 0.
@@ -55,7 +57,7 @@ public class RouterRequestGeneratorImpl(private val routingPolicy: RoutingPolicy
                 if(exeTime > maxExe) maxExe = exeTime
 
                 val metaMap = mutableMapOf<String, Any>(
-                    "stageDeadline" to ((clock.millis() + stageDeadline + (currentDepth * stageDeadline)))
+                    "stageDeadline" to ((clock.millis() + ( (currentDepth+1) * stageDeadline)))
                 )
 
                 val commMSReqs = mutableListOf<MSRequest>()
@@ -79,7 +81,7 @@ public class RouterRequestGeneratorImpl(private val routingPolicy: RoutingPolicy
                         val commExeTime = exePolicy.time(ms, hopDone)
 
                         val commMeta = mutableMapOf<String, Any>(
-                            "stageDeadline" to (clock.millis() + stageDeadline + (hopDone * stageDeadline)) )
+                            "stageDeadline" to (clock.millis() + ((hopDone+1) * stageDeadline)) )
 
                         commMSReqs.add(MSRequest(commMS, commExeTime, commMeta))
 
