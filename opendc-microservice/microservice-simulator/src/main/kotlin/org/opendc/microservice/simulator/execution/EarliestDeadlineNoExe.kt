@@ -12,7 +12,7 @@ public class EarliestDeadlineNoExe: QueuePolicy {
 
         entryList = entryList.sortedWith(deadineCompare) as MutableList<MSInstance.InvocationRequest>
 
-        entryList.map{println(it.msReq.getMeta()["stageDeadline"])}
+        // entryList.map{println(it.msReq.getMeta()["stageDeadline"])}
 
         return ArrayDeque<MSInstance.InvocationRequest>(entryList)
 

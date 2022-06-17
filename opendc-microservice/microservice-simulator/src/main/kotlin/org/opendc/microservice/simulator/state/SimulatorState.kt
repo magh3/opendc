@@ -63,7 +63,7 @@ public class SimulatorState
 
     private val totalTimeStat = DescriptiveStatistics().apply{ windowSize = 100 }
 
-    private val slowDownStat = DescriptiveStatistics().apply{ windowSize = 100 }
+    private val slowDownStat = DescriptiveStatistics()//.apply{ windowSize = 100 }
 
     private var slaVoilations = 0
 
@@ -297,7 +297,9 @@ public class SimulatorState
 
             val item = iterator.next()
 
-            logger.info{item.getStats()}
+            // print stats for individual microservice
+
+            // logger.info{item.getStats()}
 
             item.close()
         }

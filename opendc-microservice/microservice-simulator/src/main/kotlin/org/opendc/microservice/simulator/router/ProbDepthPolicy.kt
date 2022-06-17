@@ -25,7 +25,7 @@ public class ProbDepthPolicy(private val depthProb: Map<Int, Double>): DepthPoli
 
         val randProb = randGene.nextDouble(0.001, 1.0)
 
-        logger.debug{"random nr for depth is $randProb"}
+        // logger.debug{"random nr for depth is $randProb"}
 
         // there are at least 2 keys in map, so at least 2 probs
 
@@ -49,7 +49,7 @@ public class ProbDepthPolicy(private val depthProb: Map<Int, Double>): DepthPoli
 
             else if(i == normalizedProbs.size - 2) {
 
-                logger.debug{"returning last"}
+                // logger.debug{"returning last"}
 
                 // Last probability in list matches so return last instance
 

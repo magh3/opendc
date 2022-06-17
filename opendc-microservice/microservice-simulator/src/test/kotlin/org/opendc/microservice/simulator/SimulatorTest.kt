@@ -62,14 +62,16 @@ internal class SimulatorTest {
 
             MSConfiguration(UUID.randomUUID(),
                 listOf(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
-                    UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID())),
+                    UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+                    UUID.randomUUID())),
 
             MSConfiguration(UUID.randomUUID(), listOf(UUID.randomUUID(), UUID.randomUUID(),
                 UUID.randomUUID())) ,
 
             MSConfiguration(UUID.randomUUID(), listOf(UUID.randomUUID())) ,
 
-            MSConfiguration(UUID.randomUUID(), listOf(UUID.randomUUID(), UUID.randomUUID(),
+            MSConfiguration(UUID.randomUUID(),
+                listOf(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
                 UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID())) )
 
         val workload = spyk(object : MSWorkload, SimWorkload by SimFlopsWorkload(1000) {
@@ -89,7 +91,7 @@ internal class SimulatorTest {
                 4),
             RoundRobinLoadBalancer(), FirstComeFirstServe(),
             clock, this, machineModel,
-            mapper, (100000).toLong(), PoissonDelay(1066.0)
+            mapper, (1000*3600*24).toLong(), PoissonDelay(1066.0)
         )
 
         state.run()
