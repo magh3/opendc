@@ -22,7 +22,7 @@ public class RouterHelper {
 
         val slackDistribution = mutableListOf<Int>()
 
-        for(i in 0..(nrOfHops+1)){
+        for(i in 0..(nrOfHops)){
 
             // slack is divided equally
 
@@ -47,15 +47,19 @@ public class RouterHelper {
 
         val maxExeOfHops = getMaxAllHops(request.getHopMSMap())
 
+        // logger.debug { "max exe of hops $maxExeOfHops" }
+
         // distribute slack according to max of hops
 
-        val slackDistribution = maxExeOfHops.map{((it/maxExeOfHops.sum())*sla).toInt() }
+        val slackDistribution = maxExeOfHops.map{((it.toDouble()/maxExeOfHops.sum().toDouble())*sla).toInt() }
+
+        logger.debug { "slack distribution is $slackDistribution" }
 
         // distribution to deadlines
 
         val deadlines = getDeadlines(slackDistribution, clock)
 
-        logger.debug { "given sla $sla slack distribution is $slackDistribution" }
+        // logger.debug { "deadlines are  $deadlines" }
 
         // set slack for all hops
 

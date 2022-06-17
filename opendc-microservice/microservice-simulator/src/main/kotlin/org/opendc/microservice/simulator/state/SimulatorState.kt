@@ -210,7 +210,9 @@ public class SimulatorState
 
                 val request = requestGenerator.request(registryManager.getMicroservices())
 
-                // RouterHelper().setExeBasedDeadline(request, sla)
+                // RouterHelper().setEqualSlackExeDeadline(request, sla, clock)
+
+                RouterHelper().setExeBasedDeadline(request, sla, clock)
 
                 require(request.getHopMSMap().isNotEmpty()){"Empty request Map"}
 
