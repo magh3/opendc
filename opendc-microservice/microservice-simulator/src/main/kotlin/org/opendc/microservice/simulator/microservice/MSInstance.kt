@@ -262,6 +262,8 @@ public class MSInstance(private val ms: Microservice,
 
         for (commReq in commRequests) {
 
+            require(commReq.getMeta()["stageDeadline"]  != null){"Error, Stage deadline is null"}
+
             allJobs.add(corScope.launch {
 
                 val nextHop = hopsDone + 1

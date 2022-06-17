@@ -5,10 +5,10 @@ import org.opendc.microservice.simulator.routerMapping.RoutingPolicy
 import org.opendc.microservice.simulator.execution.ExeDelay
 import org.opendc.microservice.simulator.microservice.Microservice
 import java.time.Clock
-import kotlin.random.Random
 
 public class RouterRequestGeneratorImpl(private val routingPolicy: RoutingPolicy,
                                         private val exePolicy: ExeDelay,
+                                        private val sla: Int,
                                         private val clock: Clock,
                                         private val depth: Int = 1): RouterRequestGenerator {
 
@@ -22,17 +22,21 @@ public class RouterRequestGeneratorImpl(private val routingPolicy: RoutingPolicy
 
         val hopsList = mutableListOf<Map<MSRequest, List<MSRequest>>>()
 
-        var callingMicroservices = routingPolicy.getMicroservices(null, 0, microservices).toSet()
+        val initialMicroservices = routingPolicy.getMicroservices(null, 0, microservices)
+
+        var callingRequests = initialMicroservices.map{
+
+            val exeTime = exePolicy.time(it, 0)
+
+            val metaMap = mutableMapOf<String, Any>()
+
+            MSRequest(it, exeTime, metaMap)
+
+        }
 
         val reqDepth = ProbDepthPolicy(mapOf(0 to 0.5, 2 to 0.5)).getDepth()
 
         logger.debug{"making request with depth $reqDepth"}
-
-        val sla = 4000
-
-        // if depth is 2 then there are 3 microservices involved so 3 stages
-
-        val stageDeadline = (sla/(reqDepth+1)).toInt()
 
         // runs at least once for 0.
 
@@ -42,23 +46,11 @@ public class RouterRequestGeneratorImpl(private val routingPolicy: RoutingPolicy
 
             val msCommMap = mutableMapOf<MSRequest, List<MSRequest>>()
 
-            val commSet = mutableSetOf<Microservice>()
+            val commRequestsAtHop = mutableListOf<MSRequest>()
 
-            var maxExe: Long = 0
+            for(msReq in callingRequests){
 
-            logger.debug{"outerMS is $callingMicroservices"}
-
-            for(ms in callingMicroservices){
-
-                // generate comm microservices for each calling microservice
-
-                val exeTime = exePolicy.time(ms, currentDepth)
-
-                if(exeTime > maxExe) maxExe = exeTime
-
-                val metaMap = mutableMapOf<String, Any>() /*(
-                    "stageDeadline" to ((clock.millis() + ( (currentDepth+1) * stageDeadline)))
-                )*/
+                val ms = msReq.getMS()
 
                 val commMSReqs = mutableListOf<MSRequest>()
 
@@ -81,18 +73,24 @@ public class RouterRequestGeneratorImpl(private val routingPolicy: RoutingPolicy
                         val commExeTime = exePolicy.time(ms, hopDone)
 
                         val commMeta = mutableMapOf<String, Any>()
-                        /*(
-                            "stageDeadline" to (clock.millis() + ((hopDone+1) * stageDeadline)) ) */
 
-                        commMSReqs.add(MSRequest(commMS, commExeTime, commMeta))
+                        val commReq = MSRequest(commMS, commExeTime, commMeta)
 
-                        commSet.add(commMS)
+                        // map entry, communication at the hop of the specific ms
+
+                        commMSReqs.add(commReq)
+
+                        // all communication requests in the hop
+
+                        commRequestsAtHop.add(commReq)
 
                     }
 
                 }
 
-                msCommMap[MSRequest(ms, exeTime, metaMap)] = commMSReqs
+                // add map entry, empty communication request list for last depth
+
+                msCommMap[msReq] = commMSReqs
 
             }
 
@@ -100,7 +98,7 @@ public class RouterRequestGeneratorImpl(private val routingPolicy: RoutingPolicy
 
             // map after hop zero can have only ms that were previously communicated to
 
-            callingMicroservices = commSet
+            callingRequests = commRequestsAtHop
 
         }
 

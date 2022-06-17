@@ -210,9 +210,9 @@ public class SimulatorState
 
                 val request = requestGenerator.request(registryManager.getMicroservices())
 
-                // RouterHelper().setEqualSlackExeDeadline(request, sla, clock)
+                RouterHelper().setEqualSlackExeDeadline(request, sla, clock)
 
-                RouterHelper().setExeBasedDeadline(request, sla, clock)
+                // RouterHelper().setExeBasedDeadline(request, sla, clock)
 
                 require(request.getHopMSMap().isNotEmpty()){"Empty request Map"}
 
@@ -268,6 +268,8 @@ public class SimulatorState
                 delay(nextReqDelay)
 
         }
+
+        registryManager.getMicroservices().map{it.setUtilization()}
 
         println("All requests sent waiting for join")
 

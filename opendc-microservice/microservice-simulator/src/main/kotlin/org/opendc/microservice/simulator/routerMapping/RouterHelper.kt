@@ -30,9 +30,11 @@ public class RouterHelper {
 
         }
 
+        logger.debug { "given sla $sla slack distribution is $slackDistribution" }
+
         val deadlines = getDeadlines(slackDistribution, clock)
 
-        logger.debug { "given sla $sla slack distribution is $slackDistribution" }
+        logger.debug { "deadlines are  $deadlines" }
 
         // set slack for all hops
 
@@ -109,6 +111,10 @@ public class RouterHelper {
     private fun setSlackForHop(slackTime: Long, hopMap: Map<MSRequest, List<MSRequest>>){
 
         // get requests at that hop
+
+        // if hop is zero, reqs are only the keys.
+
+        // if hop is greater than zero then reqs are (hop - 1)
 
         val msRequests = hopMap.keys
 
