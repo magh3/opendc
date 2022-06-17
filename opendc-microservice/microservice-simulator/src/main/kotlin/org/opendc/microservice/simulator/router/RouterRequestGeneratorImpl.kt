@@ -14,6 +14,8 @@ public class RouterRequestGeneratorImpl(private val routingPolicy: RoutingPolicy
 
     private val logger = KotlinLogging.logger {}
 
+    private val depthPolicy = ProbDepthPolicy(mapOf(0 to 0.5, 2 to 0.5))
+
 
     /**
      * only make the request, not add meta
@@ -34,7 +36,7 @@ public class RouterRequestGeneratorImpl(private val routingPolicy: RoutingPolicy
 
         }
 
-        val reqDepth = ProbDepthPolicy(mapOf(0 to 0.5, 2 to 0.5)).getDepth()
+        val reqDepth = depthPolicy.getDepth()
 
         logger.debug{"making request with depth $reqDepth"}
 

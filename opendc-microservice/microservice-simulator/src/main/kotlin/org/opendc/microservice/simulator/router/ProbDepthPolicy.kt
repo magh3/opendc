@@ -1,10 +1,12 @@
 package org.opendc.microservice.simulator.router
 
+import mu.KotlinLogging
 import kotlin.random.Random
 import kotlin.time.seconds
 
 public class ProbDepthPolicy(private val depthProb: Map<Int, Double>): DepthPolicy {
 
+    private val logger = KotlinLogging.logger {}
 
     init{
 
@@ -22,6 +24,8 @@ public class ProbDepthPolicy(private val depthProb: Map<Int, Double>): DepthPoli
         if(depthProb.size == 1) return depthProb.keys.toList()[0]
 
         val randProb = randGene.nextDouble(0.001, 1.0)
+
+        logger.debug{"random nr for depth is $randProb"}
 
         // there are at least 2 keys in map, so at least 2 probs
 
@@ -44,6 +48,8 @@ public class ProbDepthPolicy(private val depthProb: Map<Int, Double>): DepthPoli
             if(randProb >= currentProb && randProb < nextProb) return mapEntries[i].first
 
             else if(i == normalizedProbs.size - 2) {
+
+                logger.debug{"returning last"}
 
                 // Last probability in list matches so return last instance
 
@@ -68,7 +74,7 @@ public class ProbDepthPolicy(private val depthProb: Map<Int, Double>): DepthPoli
     // normalizedProb are the start values of cumulative prob
     private fun normalizeProb(callProb: List<Double>): MutableList<Double> {
 
-        // list of end of each prob
+        // list of start of each prob
         val normalizedProbs = mutableListOf<Double>()
 
         var partialSum = 0.0
