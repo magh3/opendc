@@ -104,19 +104,4 @@ public class RouterRequestGeneratorImpl(private val routingPolicy: RoutingPolicy
         return RouterRequest(0,hopsList.toList())
     }
 
-
-    public fun setExeBasedDeadline(request: RouterRequest){
-
-        // get list of max exe time for each hop
-
-
-    }
-
-
-    private fun getMaxAllHops(){
-
-        
-
-    }
-
 }

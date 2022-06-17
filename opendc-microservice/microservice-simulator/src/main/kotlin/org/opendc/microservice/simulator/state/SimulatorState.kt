@@ -9,10 +9,8 @@ import org.opendc.microservice.simulator.loadBalancer.LoadBalancer
 import org.opendc.microservice.simulator.microservice.MSConfiguration
 import org.opendc.microservice.simulator.microservice.MSInstanceDeployer
 import org.opendc.microservice.simulator.microservice.Microservice
-import org.opendc.microservice.simulator.router.InterArrivalDelay
-import org.opendc.microservice.simulator.router.MSRequest
-import org.opendc.microservice.simulator.router.RouterRequest
-import org.opendc.microservice.simulator.router.RouterRequestGenerator
+import org.opendc.microservice.simulator.router.*
+import org.opendc.microservice.simulator.routerMapping.RouterHelper
 import org.opendc.microservice.simulator.stats.RouterStats
 import org.opendc.microservice.simulator.workload.MSWorkloadMapper
 import org.opendc.simulator.compute.model.MachineModel
@@ -211,6 +209,8 @@ public class SimulatorState
                 // get request
 
                 val request = requestGenerator.request(registryManager.getMicroservices())
+
+                RouterHelper().setExeBasedDeadline(request, sla)
 
                 require(request.getHopMSMap().isNotEmpty()){"Empty request Map"}
 
