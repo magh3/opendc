@@ -57,13 +57,13 @@ public class SimulatorState
 
     private val logger = KotlinLogging.logger {}
 
-    private var exeTimeStat = DescriptiveStatistics().apply{ windowSize = 100 }
+    private var exeTimeStat = DescriptiveStatistics()// .apply{ windowSize = 100 }
 
-    private val queueTimeStat = DescriptiveStatistics().apply{ windowSize = 100 }
+    private val queueTimeStat = DescriptiveStatistics()// .apply{ windowSize = 100 }
 
     private val totalTimeStat = DescriptiveStatistics().apply{ windowSize = 100 }
 
-    private val slowDownStat = DescriptiveStatistics()//.apply{ windowSize = 100 }
+    private val slowDownStat = DescriptiveStatistics().apply{ windowSize = 100 }
 
     private var slaVoilations = 0
 
@@ -361,9 +361,9 @@ public class SimulatorState
 
         val waitTime = totalTime - msExeTime
 
-        exeTimeStat.addValue(msExeTime.toDouble())
+        exeTimeStat.addValue(msExeTime.toDouble()/1000)
 
-        queueTimeStat.addValue(waitTime.toDouble())
+        queueTimeStat.addValue(waitTime.toDouble()/1000)
 
         totalTimeStat.addValue(totalTime.toDouble()/1000)
 

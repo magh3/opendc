@@ -63,16 +63,15 @@ internal class SimulatorTest {
             MSConfiguration(UUID.randomUUID(),
                 listOf(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
                     UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
-                    UUID.randomUUID())),
+                    UUID.randomUUID(), UUID.randomUUID() , UUID.randomUUID() )),
 
-            MSConfiguration(UUID.randomUUID(), listOf(UUID.randomUUID(), UUID.randomUUID(),
-                UUID.randomUUID())) ,
+            MSConfiguration(UUID.randomUUID(), listOf(UUID.randomUUID(), UUID.randomUUID())),
 
             MSConfiguration(UUID.randomUUID(), listOf(UUID.randomUUID())) ,
 
             MSConfiguration(UUID.randomUUID(),
                 listOf(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
-                UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID())) )
+                    UUID.randomUUID(), UUID.randomUUID())) )
 
         val workload = spyk(object : MSWorkload, SimWorkload by SimFlopsWorkload(1000) {
             override suspend fun invoke() {
