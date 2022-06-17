@@ -57,13 +57,15 @@ public class SimulatorState
 
     private val logger = KotlinLogging.logger {}
 
+    private val individualExeTimeStats = DescriptiveStatistics()
+
     private var exeTimeStat = DescriptiveStatistics()// .apply{ windowSize = 100 }
 
     private val queueTimeStat = DescriptiveStatistics()// .apply{ windowSize = 100 }
 
     private val totalTimeStat = DescriptiveStatistics().apply{ windowSize = 100 }
 
-    private val slowDownStat = DescriptiveStatistics().apply{ windowSize = 100 }
+    private val slowDownStat = DescriptiveStatistics()//.apply{ windowSize = 100 }
 
     private var slaVoilations = 0
 
@@ -212,7 +214,7 @@ public class SimulatorState
 
                 // RouterHelper().setEqualSlackExeDeadline(request, sla, clock)
 
-                // RouterHelper().setExeBasedDeadline(request, sla, clock)
+                RouterHelper().setExeBasedDeadline(request, sla, clock)
 
                 require(request.getHopMSMap().isNotEmpty()){"Empty request Map"}
 
@@ -286,6 +288,8 @@ public class SimulatorState
         // val slaVoilations = routerStats.getTotalTimes().filter{it > 4000.0}.size
 
         logger.info{"Total sla voilations = $slaVoilations"}
+
+        println(individualExeTimeStats.values.contentToString())
 
         registryManager.getMicroservices().map{logger.info{"${it.getId()} -  ${it.getUtilization().contentToString()} so mean is ${it.getUtilization().average()}"}}
 
@@ -398,6 +402,8 @@ public class SimulatorState
         // println("hop is " + request.getHops())
 
         msReq.getMS().saveExeTime(msReq.getExeTime())
+
+        individualExeTimeStats.addValue((msReq.getExeTime().toDouble()/1000))
 
         logger.debug{"Current invoke for ms ${msReq.getMS().getId()}, hop is " + request.getHops()}
 

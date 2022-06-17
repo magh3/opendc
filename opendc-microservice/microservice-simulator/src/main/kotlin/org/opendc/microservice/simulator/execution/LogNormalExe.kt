@@ -15,9 +15,21 @@ public class LogNormalExe(private val m:Double =0.0, private val s:Double =1.0):
 
     override fun time(ms: Microservice, hop: Int): Long {
 
-        var exeTime = logNormal.sample().toLong()
+        var exeTime: Long = 0
+
+        var newExeTime: Long = logNormal.sample().toLong()
+
+        // max sec of execution
+
+        while(newExeTime > 600) newExeTime = logNormal.sample().toLong()
+
+        // newExeTime = logNormal.sample().toLong()
+
+        exeTime = newExeTime
 
         if(exeTime.toInt() == 0) exeTime = 1
+
+        require(exeTime > 0){"Invalid exe time"}
 
         exeTime *= 1000
 
