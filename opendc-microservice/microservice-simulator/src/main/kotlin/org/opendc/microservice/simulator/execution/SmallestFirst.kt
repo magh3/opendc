@@ -4,7 +4,7 @@ import org.opendc.microservice.simulator.microservice.MSInstance
 import java.util.*
 import kotlin.Comparator
 
-class SmallestFirst: QueuePolicy {
+public class SmallestFirst: QueuePolicy {
 
     override fun getEntry(queue: Queue<MSInstance.InvocationRequest>): Queue<MSInstance.InvocationRequest> {
 

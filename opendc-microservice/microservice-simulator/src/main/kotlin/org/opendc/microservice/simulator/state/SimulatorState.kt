@@ -3,14 +3,12 @@ package org.opendc.microservice.simulator.state
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import mu.KotlinLogging
-import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics
 import org.opendc.microservice.simulator.execution.QueuePolicy
 import org.opendc.microservice.simulator.loadBalancer.LoadBalancer
 import org.opendc.microservice.simulator.microservice.MSConfiguration
 import org.opendc.microservice.simulator.microservice.MSInstanceDeployer
 import org.opendc.microservice.simulator.microservice.Microservice
 import org.opendc.microservice.simulator.router.*
-import org.opendc.microservice.simulator.routerMapping.RouterHelper
 import org.opendc.microservice.simulator.stats.RouterStats
 import org.opendc.microservice.simulator.workload.MSWorkloadMapper
 import org.opendc.simulator.compute.model.MachineModel
@@ -57,15 +55,15 @@ public class SimulatorState
 
     private val logger = KotlinLogging.logger {}
 
-    private val individualExeTimeStats = DescriptiveStatistics()
+    private val individualExeTimeStats = mutableListOf<Long>()
 
-    private var exeTimeStat = DescriptiveStatistics()// .apply{ windowSize = 100 }
+    private var exeTimeStat = mutableListOf<Long>()// .apply{ windowSize = 100 }
 
     private val queueTimeStat = mutableListOf<Long>()// .apply{ windowSize = 100 }
 
     private val totalTimeStat = mutableListOf<Long>()// .apply{ windowSize = 100 }
 
-    private val slowDownStat = DescriptiveStatistics()//.apply{ windowSize = 100 }
+    private val slowDownStat = mutableListOf<Long>()//.apply{ windowSize = 100 }
 
     private val requestsCompletedHourly = mutableListOf<Long>()
 
@@ -216,7 +214,7 @@ public class SimulatorState
 
                 val request = requestGenerator.request(registryManager.getMicroservices())
 
-                RouterHelper().setEqualSlackExeDeadline(request, sla, clock)
+                // RouterHelper().setEqualSlackExeDeadline(request, sla, clock)
 
                 // RouterHelper().setExeBasedDeadline(request, sla, clock)
 
@@ -345,7 +343,7 @@ public class SimulatorState
 
         val requestJobs = mutableListOf<Job>()
 
-        var msExeTime = 0
+        var msExeTime: Long = 0
 
         logger.debug{"Time ${clock.millis()} received request for ${msRequests.size} microservices"}
 
@@ -375,13 +373,13 @@ public class SimulatorState
 
         val waitTime = totalTime - msExeTime
 
-        exeTimeStat.addValue(msExeTime.toDouble()/1000)
+        exeTimeStat.add(msExeTime/1000)
 
         queueTimeStat.add(waitTime/1000)
 
         totalTimeStat.add(totalTime/1000)
 
-        slowDownStat.addValue(((msExeTime+waitTime)/msExeTime).toDouble() )
+        slowDownStat.add(((msExeTime+waitTime)/msExeTime) )
 
         logger.debug{"${clock.millis()} Request completed with total time $totalTime, " +
             "execution time was $msExeTime, " +
@@ -413,7 +411,7 @@ public class SimulatorState
 
         msReq.getMS().saveExeTime(msReq.getExeTime())
 
-        individualExeTimeStats.addValue((msReq.getExeTime().toDouble()/1000))
+        individualExeTimeStats.add((msReq.getExeTime()/1000))
 
         logger.debug{"Current invoke for ms ${msReq.getMS().getId()}, hop is " + request.getHops()}
 
