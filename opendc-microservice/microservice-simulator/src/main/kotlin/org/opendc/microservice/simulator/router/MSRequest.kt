@@ -4,8 +4,8 @@ import org.opendc.microservice.simulator.microservice.Microservice
 import kotlin.coroutines.Continuation
 
 public class MSRequest(private val ms: Microservice,
-                private val exeTime: Long,
-                private val meta: MutableMap<String, Any>){
+                       private var exeTime: Long,
+                       private val meta: MutableMap<String, Any>){
 
     private lateinit var cont: Continuation<Int>
 
@@ -25,6 +25,13 @@ public class MSRequest(private val ms: Microservice,
     public fun getExeTime(): Long {
 
         return exeTime
+
+    }
+
+
+    public fun updateExeTime(newExeTime: Long){
+
+        exeTime = newExeTime
 
     }
 

@@ -57,8 +57,9 @@ internal class SimulatorTest {
     @Test
     fun runMiniSim() = runBlockingSimulation {
 
-        // val msConfig = MSConfigGenerator().generate(4,200)
+        val msConfig = MSConfigGenerator().generate(4,2)
 
+        /*
         val msConfig = mutableListOf<MSConfiguration>(
 
             MSConfiguration(UUID.randomUUID(),
@@ -71,6 +72,8 @@ internal class SimulatorTest {
 
             MSConfiguration(UUID.randomUUID(),
                 listOf(UUID.randomUUID(), UUID.randomUUID())) )
+
+         */
 
         val workload = spyk(object : MSWorkload, SimWorkload by SimFlopsWorkload(1000) {
             override suspend fun invoke() {
@@ -87,9 +90,9 @@ internal class SimulatorTest {
             RouterRequestGeneratorImpl(ProbRouting(listOf(0.62,0.18,0.08,0.12),1),
                 LogNormalExe(-4.13, 3.48), 4000, clock,
                 4),
-            RoundRobinLoadBalancer(), SmallestFirst(),
+            RoundRobinLoadBalancer(), FirstComeFirstServe(),
             clock, this, machineModel,
-            mapper, (1000*3600*24).toLong(), PoissonDelay(1066.0)
+            mapper, (100000).toLong(), PoissonDelay(1066.0)
         )
 
         state.run()

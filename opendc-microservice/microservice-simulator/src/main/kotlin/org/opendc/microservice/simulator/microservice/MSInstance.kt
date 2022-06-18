@@ -70,6 +70,8 @@ public class MSInstance(private val ms: Microservice,
 
     private val slowDownStat = DescriptiveStatistics().apply{ windowSize = 100 }
 
+    private val shareDelay: Long = 500
+
     /**
      * The logger instance of this instance.
      */
@@ -189,6 +191,8 @@ public class MSInstance(private val ms: Microservice,
 
                     // queue.map{println(it.msReq.getMeta()["stageDeadline"])}
 
+                    queue.map{println(it.msReq.getExeTime())}
+
                     val queueEntry = queue.poll()
 
                     // if(queue.size > 500)
@@ -205,15 +209,43 @@ public class MSInstance(private val ms: Microservice,
 
                     workload.invoke()
 
-                    delay(exeTime)
+                    if(exeTime <= shareDelay) {
 
-                    allJobs.add(launch {
+                        // request will finish
 
-                        communicate(this, queueEntry.request, queueEntry.msReq)
+                        delay(exeTime)
 
-                    })
+                        // if request completes
 
-                    logger.debug { " ${clock.millis()} Finished invoke at coroutine ${Thread.currentThread().name} on instance ${getId()}"}
+                        allJobs.add(launch {
+
+                            communicate(this, queueEntry.request, queueEntry.msReq)
+
+                        })
+
+                        logger.debug { " ${clock.millis()} Finished invoke at coroutine ${Thread.currentThread().name} on instance ${getId()}"}
+
+
+                    }
+                    else {
+
+                        // request does not finish
+
+                        delay(shareDelay)
+
+                        // update leftover exe time
+
+                        val exeLeft = exeTime - shareDelay
+
+                        queueEntry.msReq.updateExeTime(exeLeft)
+
+                        // put at end of queue
+
+                        queue.add(queueEntry)
+
+                        // chan.trySend(Unit)
+
+                    }
 
                 }
 
