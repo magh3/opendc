@@ -61,11 +61,13 @@ public class SimulatorState
 
     private var exeTimeStat = DescriptiveStatistics()// .apply{ windowSize = 100 }
 
-    private val queueTimeStat = DescriptiveStatistics()// .apply{ windowSize = 100 }
+    private val queueTimeStat = mutableListOf<Long>()// .apply{ windowSize = 100 }
 
-    private val totalTimeStat = DescriptiveStatistics().apply{ windowSize = 100 }
+    private val totalTimeStat = mutableListOf<Long>()// .apply{ windowSize = 100 }
 
     private val slowDownStat = DescriptiveStatistics()//.apply{ windowSize = 100 }
+
+    private val requestsCompletedHourly = mutableListOf<Long>()
 
     private var slaVoilations = 0
 
@@ -178,7 +180,7 @@ public class SimulatorState
 
         var allJobs = mutableListOf<Job>()
 
-        var count = 0
+        var count: Long = 0
 
         val oneHr = 1*3600*1000
 
@@ -198,6 +200,8 @@ public class SimulatorState
 
                     registryManager.getMicroservices().map{it.setUtilization()}
 
+                    requestsCompletedHourly.add(count - requestsCompletedHourly.sum())
+
                     // update timer
 
                     utilizationCheckTime += oneHr
@@ -212,9 +216,9 @@ public class SimulatorState
 
                 val request = requestGenerator.request(registryManager.getMicroservices())
 
-                // RouterHelper().setEqualSlackExeDeadline(request, sla, clock)
+                RouterHelper().setEqualSlackExeDeadline(request, sla, clock)
 
-                RouterHelper().setExeBasedDeadline(request, sla, clock)
+                // RouterHelper().setExeBasedDeadline(request, sla, clock)
 
                 require(request.getHopMSMap().isNotEmpty()){"Empty request Map"}
 
@@ -273,11 +277,17 @@ public class SimulatorState
 
         registryManager.getMicroservices().map{it.setUtilization()}
 
+        requestsCompletedHourly.add(count - requestsCompletedHourly.sum())
+
         println("All requests sent waiting for join")
 
         allJobs.joinAll()
 
         println("END TIME ${clock.millis()}")
+
+        println("Nr of requests: $count")
+
+        println("Hourly requests: $requestsCompletedHourly")
 
         stop()
 
@@ -289,7 +299,7 @@ public class SimulatorState
 
         logger.info{"Total sla voilations = $slaVoilations"}
 
-        println(individualExeTimeStats.values.contentToString())
+        // println(individualExeTimeStats.values.contentToString())
 
         registryManager.getMicroservices().map{logger.info{"${it.getId()} -  ${it.getUtilization().contentToString()} so mean is ${it.getUtilization().average()}"}}
 
@@ -367,9 +377,9 @@ public class SimulatorState
 
         exeTimeStat.addValue(msExeTime.toDouble()/1000)
 
-        queueTimeStat.addValue(waitTime.toDouble()/1000)
+        queueTimeStat.add(waitTime/1000)
 
-        totalTimeStat.addValue(totalTime.toDouble()/1000)
+        totalTimeStat.add(totalTime/1000)
 
         slowDownStat.addValue(((msExeTime+waitTime)/msExeTime).toDouble() )
 
