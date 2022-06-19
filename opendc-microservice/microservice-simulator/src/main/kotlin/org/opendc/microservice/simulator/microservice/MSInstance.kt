@@ -70,6 +70,8 @@ public class MSInstance(private val ms: Microservice,
 
     private val slowDownStat = DescriptiveStatistics().apply{ windowSize = 100 }
 
+    private val sharePolicy = true
+
     private val shareDelay: Long = 500
 
     /**
@@ -191,7 +193,7 @@ public class MSInstance(private val ms: Microservice,
 
                     // queue.map{println(it.msReq.getMeta()["stageDeadline"])}
 
-                    queue.map{println(it.msReq.getExeTime())}
+                    // queue.map{println(it.msReq.getExeTime())}
 
                     val queueEntry = queue.poll()
 
@@ -200,7 +202,7 @@ public class MSInstance(private val ms: Microservice,
 
                     // println("queue size ${queue.size +1}, choosed req with deadline ${queueEntry.msReq.getMeta()["stageDeadline"]}" )
 
-                    val exeTime = queueEntry.msReq.getExeTime()
+                    var exeTime = queueEntry.msReq.getExeTime()
 
                     runningLoadEndTime = clock.millis() + exeTime
 
@@ -209,7 +211,36 @@ public class MSInstance(private val ms: Microservice,
 
                     workload.invoke()
 
-                    if(exeTime <= shareDelay) {
+                    if(sharePolicy) {
+
+                        // set meta if first time
+
+                        if(queueEntry.msReq.getMeta()["exeLeft"] == null) queueEntry.msReq.setMeta("exeLeft", exeTime)
+
+                        exeTime = queueEntry.msReq.getMeta()["exeLeft"] as Long
+
+                    }
+
+                    if(sharePolicy && exeTime > shareDelay) {
+
+                        // request does not finish
+
+                        delay(shareDelay)
+
+                        // update leftover exe time
+
+                        val exeLeft = exeTime - shareDelay
+
+                        queueEntry.msReq.setMeta("exeLeft", exeLeft)
+
+                        // put at end of queue
+
+                        queue.add(queueEntry)
+
+                        // chan.trySend(Unit)
+
+                    }
+                    else {
 
                         // request will finish
 
@@ -224,26 +255,6 @@ public class MSInstance(private val ms: Microservice,
                         })
 
                         logger.debug { " ${clock.millis()} Finished invoke at coroutine ${Thread.currentThread().name} on instance ${getId()}"}
-
-
-                    }
-                    else {
-
-                        // request does not finish
-
-                        delay(shareDelay)
-
-                        // update leftover exe time
-
-                        val exeLeft = exeTime - shareDelay
-
-                        queueEntry.msReq.updateExeTime(exeLeft)
-
-                        // put at end of queue
-
-                        queue.add(queueEntry)
-
-                        // chan.trySend(Unit)
 
                     }
 
