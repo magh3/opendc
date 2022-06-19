@@ -57,7 +57,7 @@ internal class SimulatorTest {
     @Test
     fun runMiniSim() = runBlockingSimulation {
 
-        val msConfig = MSConfigGenerator().generate(4,2)
+        // val msConfig = MSConfigGenerator().generate(4,200)
 
         val msConfig = mutableListOf<MSConfiguration>(
 
