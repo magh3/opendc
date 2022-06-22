@@ -70,7 +70,7 @@ public class MSInstance(private val ms: Microservice,
 
     private val slowDownStat = DescriptiveStatistics().apply{ windowSize = 100 }
 
-    private val sharePolicy = true
+    private val sharePolicy = false
 
     private val shareDelay: Long = 500
 

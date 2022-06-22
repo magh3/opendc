@@ -9,6 +9,7 @@ import org.opendc.microservice.simulator.microservice.MSConfiguration
 import org.opendc.microservice.simulator.microservice.MSInstanceDeployer
 import org.opendc.microservice.simulator.microservice.Microservice
 import org.opendc.microservice.simulator.router.*
+import org.opendc.microservice.simulator.routerMapping.RouterHelper
 import org.opendc.microservice.simulator.stats.RouterStats
 import org.opendc.microservice.simulator.workload.MSWorkloadMapper
 import org.opendc.simulator.compute.model.MachineModel
@@ -214,7 +215,7 @@ public class SimulatorState
 
                 val request = requestGenerator.request(registryManager.getMicroservices())
 
-                // RouterHelper().setEqualSlackExeDeadline(request, sla, clock)
+                RouterHelper().setEqualSlackExeDeadline(request, sla, clock)
 
                 // RouterHelper().setExeBasedDeadline(request, sla, clock)
 
@@ -297,7 +298,7 @@ public class SimulatorState
 
         logger.info{"Total sla voilations = $slaVoilations"}
 
-        // println(individualExeTimeStats.values.contentToString())
+        println(individualExeTimeStats)
 
         registryManager.getMicroservices().map{logger.info{"${it.getId()} -  ${it.getUtilization().contentToString()} so mean is ${it.getUtilization().average()}"}}
 
