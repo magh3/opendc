@@ -9,7 +9,6 @@ import org.opendc.microservice.simulator.microservice.MSConfiguration
 import org.opendc.microservice.simulator.microservice.MSInstanceDeployer
 import org.opendc.microservice.simulator.microservice.Microservice
 import org.opendc.microservice.simulator.router.*
-import org.opendc.microservice.simulator.routerMapping.RouterHelper
 import org.opendc.microservice.simulator.stats.RouterStats
 import org.opendc.microservice.simulator.workload.MSWorkloadMapper
 import org.opendc.simulator.compute.model.MachineModel
@@ -56,15 +55,9 @@ public class SimulatorState
 
     private val logger = KotlinLogging.logger {}
 
+    private val routerStats = RouterStats()
+
     private val individualExeTimeStats = mutableListOf<Long>()
-
-    private var exeTimeStat = mutableListOf<Long>()// .apply{ windowSize = 100 }
-
-    private val queueTimeStat = mutableListOf<Long>()// .apply{ windowSize = 100 }
-
-    private val totalTimeStat = mutableListOf<Long>()// .apply{ windowSize = 100 }
-
-    private val slowDownStat = mutableListOf<Long>()//.apply{ windowSize = 100 }
 
     private val requestsCompletedHourly = mutableListOf<Long>()
 
@@ -131,8 +124,6 @@ public class SimulatorState
 
                         launch {
 
-                            val entryRef = queueEntry
-
                             val startTime = clock.millis()
 
                             val exeTime = loadBalancer.instance(queueEntry.msReq.getMS(), registryManager.getInstances()).
@@ -140,7 +131,7 @@ public class SimulatorState
 
                             // resumes when above instance invoke finishes
 
-                            entryRef.cont.resume(exeTime)
+                            queueEntry.cont.resume(exeTime)
 
                             logger.debug{"--------------finished request startTime was $startTime"}
 
@@ -189,8 +180,6 @@ public class SimulatorState
 
             while (clock.millis() < lastReqTime) {
 
-                // println("filtering..")
-
                 if(clock.millis() > utilizationCheckTime){
 
                     println("${clock.millis()} setting utilization")
@@ -215,60 +204,24 @@ public class SimulatorState
 
                 val request = requestGenerator.request(registryManager.getMicroservices())
 
-                // RouterHelper().setEqualSlackExeDeadline(request, sla, clock)
-
-                // RouterHelper().setExeBasedDeadline(request, sla, clock)
-
                 require(request.getHopMSMap().isNotEmpty()){"Empty request Map"}
 
-                // print("${allJobs.size}, ")
+                // set meta that may be required by queue policy later
 
-                // println("total requests: $count")
-
-                // println("${clock.millis()} - request remaining: ${allJobs.size}")
+                queuePolicy.setMeta(request, sla, clock)
 
                 logger.debug{request}
 
                 nextReqDelay = interArrivalDelay.time()
 
-                // invoke loop
+                // launch coroutine to wait for full request to finish
+                // named as full request coroutine
 
-                try {
+                allJobs.add(scope.launch {
 
-                    // launch coroutine to wait for full request to finish
-                    // named as full request coroutine
+                    invokeMicroservices(request, this)
 
-                    allJobs.add(scope.launch {
-
-                        // try {
-                            // withTimeout((1000 * 3600).toLong()) {
-
-                                invokeMicroservices(request, this)
-
-                            // }
-                        // }
-                        // catch(t: TimeoutCancellationException){
-
-                        //     println("request timeout ")
-
-                        // }
-
-                        // println("Request completed memory free is " +
-                        //     formatSize(Runtime.getRuntime().freeMemory()) + " / " +
-                        //     formatSize(Runtime.getRuntime().maxMemory())
-                        // )
-
-                    })
-
-
-                }
-                catch(e: OutOfMemoryError){
-
-                    logger.error {"out of memory error $e"}
-
-                    break
-
-                }
+                })
 
                 delay(nextReqDelay)
 
@@ -278,52 +231,30 @@ public class SimulatorState
 
         requestsCompletedHourly.add(count - requestsCompletedHourly.sum())
 
-        println("All requests sent waiting for join")
+        logger.info {"All requests sent waiting for join"}
 
         allJobs.joinAll()
 
-        println("END TIME ${clock.millis()}")
-
-        println("Nr of requests: $count")
-
-        println("Hourly requests: $requestsCompletedHourly")
-
         stop()
 
-        val routerStats = getStats()
+        logger.info {"END TIME ${clock.millis()}"}
 
-        logger.info { routerStats }
+        logger.info {"Total Nr of requests: $count"}
 
-        // val slaVoilations = routerStats.getTotalTimes().filter{it > 4000.0}.size
+        logger.info {"Hourly requests: $requestsCompletedHourly"}
+
+        logger.info {"Router Stats: \n $routerStats " }
 
         logger.info{"Total sla voilations = $slaVoilations"}
 
-        println(individualExeTimeStats)
+        logger.info{"Individual ms exe times: $individualExeTimeStats"}
 
-        registryManager.getMicroservices().map{logger.info{"${it.getId()} -  ${it.getUtilization().contentToString()} so mean is ${it.getUtilization().average()}"}}
+        registryManager.getMicroservices().map{
+            logger.info{"${it.getId()} -  ${it.getUtilization().contentToString()} " +
+                "so mean is ${it.getUtilization().average()}"}}
 
-        val myCollection = registryManager.getInstances()
+        registryManager.getInstances().map{logger.info{it.getStats()}}
 
-        val iterator = myCollection.iterator()
-
-        while(iterator.hasNext()) {
-
-            val item = iterator.next()
-
-            // print stats for individual microservice
-
-            logger.info{item.getStats()}
-
-            item.close()
-        }
-
-    }
-
-
-    public fun formatSize(v: Long): String {
-        if (v < 1024) return "$v B"
-        val z = (63 - java.lang.Long.numberOfLeadingZeros(v)) / 10
-        return String.format("%.1f %sB", v.toDouble() / (1L shl z * 10), " KMGTPE"[z])
     }
 
 
@@ -374,24 +305,17 @@ public class SimulatorState
 
         val waitTime = totalTime - msExeTime
 
-        exeTimeStat.add(msExeTime/1000)
+        routerStats.saveExeTime(msExeTime/1000)
 
-        queueTimeStat.add(waitTime/1000)
+        routerStats.saveWaitTime(waitTime/1000)
 
-        totalTimeStat.add(totalTime/1000)
+        routerStats.saveTotalTime(totalTime/1000)
 
-        slowDownStat.add(((msExeTime+waitTime)/msExeTime) )
+        routerStats.saveSlowDown(((msExeTime+waitTime)/msExeTime) )
 
         logger.debug{"${clock.millis()} Request completed with total time $totalTime, " +
             "execution time was $msExeTime, " +
             "wait time was $waitTime"}
-
-    }
-
-
-    public fun getStats(): RouterStats {
-
-        return RouterStats(exeTimeStat, queueTimeStat, totalTimeStat, slowDownStat)
 
     }
 
@@ -407,8 +331,6 @@ public class SimulatorState
 
 
     public suspend fun invoke(msReq: MSRequest, request: RouterRequest): Int {
-
-        // println("hop is " + request.getHops())
 
         msReq.getMS().saveExeTime(msReq.getExeTime())
 

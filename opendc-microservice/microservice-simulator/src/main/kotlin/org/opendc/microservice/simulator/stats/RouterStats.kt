@@ -1,12 +1,37 @@
 package org.opendc.microservice.simulator.stats
 
-import java.util.*
 
-public class RouterStats(private val exeTimeStats: MutableList<Long>,
-                         private val waitTimeStats: MutableList<Long>,
-                         private val totalTimeStats: MutableList<Long>,
-                         private val slowDownStats: MutableList<Long>
-) {
+public class RouterStats() {
+
+    private val exeTimeStats: MutableList<Long> = mutableListOf()
+    private val waitTimeStats: MutableList<Long> = mutableListOf()
+    private val totalTimeStats: MutableList<Long> = mutableListOf()
+    private val slowDownStats: MutableList<Long> = mutableListOf()
+
+
+    public fun saveExeTime(value: Long){
+
+        exeTimeStats.add(value)
+
+    }
+
+    public fun saveWaitTime(value: Long){
+
+        waitTimeStats.add(value)
+
+    }
+
+    public fun saveTotalTime(value: Long){
+
+        totalTimeStats.add(value)
+
+    }
+
+    public fun saveSlowDown(value: Long){
+
+        slowDownStats.add(value)
+
+    }
 
     override fun toString(): String {
 
