@@ -215,7 +215,7 @@ public class SimulatorState
 
                 val request = requestGenerator.request(registryManager.getMicroservices())
 
-                RouterHelper().setEqualSlackExeDeadline(request, sla, clock)
+                // RouterHelper().setEqualSlackExeDeadline(request, sla, clock)
 
                 // RouterHelper().setExeBasedDeadline(request, sla, clock)
 
@@ -312,7 +312,7 @@ public class SimulatorState
 
             // print stats for individual microservice
 
-            // logger.info{item.getStats()}
+            logger.info{item.getStats()}
 
             item.close()
         }

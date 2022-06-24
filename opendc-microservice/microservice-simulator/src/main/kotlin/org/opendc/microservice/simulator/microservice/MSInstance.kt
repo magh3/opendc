@@ -363,7 +363,7 @@ public class MSInstance(private val ms: Microservice,
 
         logger.debug{" ${clock.millis()} Queuing Invoke request for instance "+ getId() +" with exeTime $exeTime"}
 
-        val waitTime = queueLoad().toDouble()
+        val waitTime = totalLoad().toDouble()
 
         // record wait time
 

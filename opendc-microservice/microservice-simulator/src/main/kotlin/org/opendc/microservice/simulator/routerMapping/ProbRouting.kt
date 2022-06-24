@@ -30,12 +30,12 @@ public class ProbRouting(private val callProb: List<Double>, private val nrOfMS:
 
         require(leftMicroservices.isNotEmpty()){"No microservice found."}
 
-        require(nrOfMS <= leftMicroservices.size){"nr of ms requested cannot be " +
-            "more than nr of ms present"}
+        // require(nrOfMS <= leftMicroservices.size){"nr of ms requested cannot be " +
+            // "more than nr of ms present"}
 
-        if(leftMicroservices.size == 1) return leftMicroservices.toList()
+        // if(leftMicroservices.size == 1) return leftMicroservices.toList()
 
-        else{
+        //else{
 
             val callMS = mutableListOf<Microservice>()
 
@@ -51,7 +51,7 @@ public class ProbRouting(private val callProb: List<Double>, private val nrOfMS:
 
             return callMS
 
-        }
+        //}
 
     }
 
