@@ -10,7 +10,7 @@ import org.opendc.microservice.simulator.microservice.Microservice
 public class MockLoadBalancer: LoadBalancer {
 
     // return instance of microservice
-    override public fun instance(ms: Microservice, registry: MutableSet<MSInstance>): MSInstance {
+    override public fun instance(ms: Microservice, registry: Set<MSInstance>): MSInstance {
 
         for(instance in registry){
 

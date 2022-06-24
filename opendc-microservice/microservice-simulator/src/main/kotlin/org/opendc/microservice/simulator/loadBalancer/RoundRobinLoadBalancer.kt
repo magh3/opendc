@@ -9,7 +9,7 @@ public class RoundRobinLoadBalancer: LoadBalancer {
 
     private val msInvokeMap: MutableMap<UUID, Queue<UUID>> = mutableMapOf()
 
-    override fun instance(ms: Microservice, registry: MutableSet<MSInstance>): MSInstance {
+    override fun instance(ms: Microservice, registry: Set<MSInstance>): MSInstance {
 
         // update local data for all microservices
 
@@ -39,7 +39,7 @@ public class RoundRobinLoadBalancer: LoadBalancer {
     }
 
 
-    private fun updateNewInstances(registry: MutableSet<MSInstance>){
+    private fun updateNewInstances(registry: Set<MSInstance>){
 
         var queueInstances: Queue<UUID>
 
@@ -80,7 +80,7 @@ public class RoundRobinLoadBalancer: LoadBalancer {
     }
 
 
-    private fun updateDeletedInstances(registry: MutableSet<MSInstance>){
+    private fun updateDeletedInstances(registry: Set<MSInstance>){
 
         val registryInstanceIds : MutableList<UUID> = mutableListOf()
 

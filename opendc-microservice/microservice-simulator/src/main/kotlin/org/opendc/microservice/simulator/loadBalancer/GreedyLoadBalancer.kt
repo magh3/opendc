@@ -10,7 +10,7 @@ import java.util.*
  */
 public class GreedyLoadBalancer: LoadBalancer {
 
-    override fun instance(ms: Microservice, registry: MutableSet<MSInstance>): MSInstance {
+    override fun instance(ms: Microservice, registry: Set<MSInstance>): MSInstance {
 
         val msInstances = filterMSInstances(ms, registry)
 

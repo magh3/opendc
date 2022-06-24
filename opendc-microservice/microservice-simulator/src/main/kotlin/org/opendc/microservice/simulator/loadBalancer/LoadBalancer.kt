@@ -8,9 +8,9 @@ import java.util.*
 public interface LoadBalancer {
 
     // return instance of microservice
-    public fun instance(ms: Microservice, registry: MutableSet<MSInstance>): MSInstance
+    public fun instance(ms: Microservice, registry: Set<MSInstance>): MSInstance
 
-    public fun instanceFromId(id: UUID, instances: MutableSet<MSInstance>): MSInstance {
+    public fun instanceFromId(id: UUID, instances: Set<MSInstance>): MSInstance {
 
         for(instance in instances){
 
@@ -25,7 +25,7 @@ public interface LoadBalancer {
     }
 
 
-    public fun filterMSInstances(ms: Microservice, registry: MutableSet<MSInstance>): MutableSet<MSInstance> {
+    public fun filterMSInstances(ms: Microservice, registry: Set<MSInstance>): MutableSet<MSInstance> {
 
         val msInstances: MutableSet<MSInstance> = mutableSetOf()
 

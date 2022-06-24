@@ -25,7 +25,7 @@ public class RegistryManager(){
     }
 
 
-    public fun getInstances(): MutableSet<MSInstance> {
+    public fun getInstances(): Set<MSInstance> {
 
         return registry
 

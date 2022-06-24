@@ -1,6 +1,8 @@
 package org.opendc.microservice.simulator.execution
 
 import org.opendc.microservice.simulator.microservice.MSInstance
+import org.opendc.microservice.simulator.router.RouterRequest
+import java.time.Clock
 import java.util.*
 import kotlin.Comparator
 
@@ -15,6 +17,10 @@ public class SmallestFirst: QueuePolicy {
         // entryList.map{println(it.msReq.getExeTime())}
 
         return ArrayDeque<MSInstance.InvocationRequest>(entryList)
+
+    }
+
+    override fun setMeta(request: RouterRequest, sla: Int, clock: Clock) {
 
     }
 

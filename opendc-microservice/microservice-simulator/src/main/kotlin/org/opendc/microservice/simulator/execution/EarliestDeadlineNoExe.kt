@@ -1,5 +1,6 @@
 package org.opendc.microservice.simulator.execution
 
+import mu.KotlinLogging
 import org.opendc.microservice.simulator.microservice.MSInstance
 import org.opendc.microservice.simulator.router.MSRequest
 import org.opendc.microservice.simulator.router.RouterRequest
@@ -7,6 +8,8 @@ import java.time.Clock
 import java.util.*
 
 public open class EarliestDeadlineNoExe: QueuePolicy {
+
+    private val logger = KotlinLogging.logger {}
 
     override fun getEntry(queue: Queue<MSInstance.InvocationRequest>): Queue<MSInstance.InvocationRequest> {
 
@@ -34,7 +37,7 @@ public open class EarliestDeadlineNoExe: QueuePolicy {
     }
 
 
-    fun getDeadlines(slackDistribution: List<Int>, clock: Clock): List<Long> {
+    public fun getDeadlines(slackDistribution: List<Int>, clock: Clock): List<Long> {
 
         val deadlines = mutableListOf<Long>()
 
@@ -59,7 +62,7 @@ public open class EarliestDeadlineNoExe: QueuePolicy {
     }
 
 
-    fun setSlackAllHops(exeTimesOfHops: List<Long>, requestMap: List<Map<MSRequest, List<MSRequest>>>){
+    public fun setSlackAllHops(exeTimesOfHops: List<Long>, requestMap: List<Map<MSRequest, List<MSRequest>>>){
 
         require(exeTimesOfHops.size == requestMap.size){"ERROR setting exe times"}
 

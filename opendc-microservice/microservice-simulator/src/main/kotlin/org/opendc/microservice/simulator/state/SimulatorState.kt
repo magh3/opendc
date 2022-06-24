@@ -6,6 +6,7 @@ import mu.KotlinLogging
 import org.opendc.microservice.simulator.execution.QueuePolicy
 import org.opendc.microservice.simulator.loadBalancer.LoadBalancer
 import org.opendc.microservice.simulator.microservice.MSConfiguration
+import org.opendc.microservice.simulator.microservice.MSInstance
 import org.opendc.microservice.simulator.microservice.MSInstanceDeployer
 import org.opendc.microservice.simulator.microservice.Microservice
 import org.opendc.microservice.simulator.router.*
@@ -235,7 +236,7 @@ public class SimulatorState
 
         allJobs.joinAll()
 
-        stop()
+        stop(registryManager.getInstances())
 
         logger.info {"END TIME ${clock.millis()}"}
 
@@ -348,7 +349,13 @@ public class SimulatorState
     }
 
 
-    public suspend fun stop(){
+    public suspend fun stop(instances: Set<MSInstance>){
+
+        // stop instances
+
+        instances.map{it.close()}
+
+        // stop router
 
         job?.cancel()
 

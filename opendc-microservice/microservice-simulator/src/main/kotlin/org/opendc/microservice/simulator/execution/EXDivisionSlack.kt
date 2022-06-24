@@ -36,7 +36,7 @@ public class EXDivisionSlack: EarliestDeadlineNoExe() {
     }
 
 
-    fun getMaxAllHops(requestMap: List<Map<MSRequest, List<MSRequest>>>): List<Long> {
+    public fun getMaxAllHops(requestMap: List<Map<MSRequest, List<MSRequest>>>): List<Long> {
 
         val maxExeOfHops = mutableListOf<Long>()
 
