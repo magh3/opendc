@@ -56,7 +56,7 @@ internal class SimulatorTest {
 
         // experiment 1 setup ms config: 4,listOf(4,1,1,2)
 
-        val msConfig = MSConfigGenerator().generateV2(4,listOf(4,1,1,2))
+        val msConfig = MSConfigGenerator().generate(4,listOf(4,1,1,2))
 
         val workload = spyk(object : MSWorkload, SimWorkload by SimFlopsWorkload(1000) {
             override suspend fun invoke() {

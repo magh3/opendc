@@ -238,21 +238,25 @@ public class SimulatorState
 
         stop(registryManager)
 
-        logger.info {"END TIME ${clock.millis()}"}
+        logger.info {"END TIME ${clock.millis()} \n"}
 
-        logger.info {"Total Nr of requests: $count"}
+        logger.info {"Total Nr of requests: $count \n"}
 
-        logger.info {"Hourly requests: $requestsCompletedHourly"}
+        logger.info {"Hourly requests: $requestsCompletedHourly  \n"}
 
-        logger.info {"Router Stats: \n $routerStats " }
+        logger.info {"$routerStats" }
 
-        logger.info{"Total sla voilations = $slaVoilations"}
+        logger.info{"Total sla voilations = $slaVoilations \n"}
 
-        logger.info{"Individual ms exe times: $individualExeTimeStats"}
+        logger.info{"Individual ms exe times: $individualExeTimeStats \n"}
 
-        registryManager.getMicroservices().map{
-            logger.info{"${it.getId()} -  ${it.getUtilization().contentToString()} " +
-                "so mean is ${it.getUtilization().average()}"}}
+        logger.info { "Hourly Utilization: \n" }
+        registryManager.getMicroservices().map {
+            logger.info {
+                "ms: ${it.getId()}  mean is ${it.getUtilization().average()}" +
+                    " with values  ${it.getUtilization().contentToString()} \n"
+            }
+        }
 
         registryManager.getInstances().map{logger.info{it.getStats()}}
 
