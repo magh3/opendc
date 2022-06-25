@@ -236,8 +236,6 @@ public class SimulatorState
 
         allJobs.joinAll()
 
-        stop(registryManager)
-
         logger.info {"END TIME ${clock.millis()} \n"}
 
         logger.info {"Total Nr of requests: $count \n"}
@@ -259,6 +257,8 @@ public class SimulatorState
         }
 
         registryManager.getInstances().map{logger.info{it.getStats()}}
+
+        stop(registryManager)
 
     }
 

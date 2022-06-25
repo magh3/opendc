@@ -20,7 +20,7 @@ public class GreedyLoadBalancer: LoadBalancer {
 
         // find min instance load entry
 
-        var min: Map.Entry<UUID, Int> = instanceLoadMap.iterator().next();
+        var min: Map.Entry<UUID, Long> = instanceLoadMap.iterator().next();
 
         for (entry in instanceLoadMap) {
 
@@ -36,9 +36,9 @@ public class GreedyLoadBalancer: LoadBalancer {
     }
 
 
-    private fun getLoads(msInstances: MutableSet<MSInstance>): MutableMap<UUID, Int> {
+    private fun getLoads(msInstances: MutableSet<MSInstance>): MutableMap<UUID, Long> {
 
-        val instanceLoadMap: MutableMap<UUID, Int> = mutableMapOf()
+        val instanceLoadMap: MutableMap<UUID, Long> = mutableMapOf()
 
         for(instance in msInstances){
 

@@ -64,11 +64,7 @@ public class MSInstance(private val ms: Microservice,
 
     private var state: InstanceState = InstanceState.Idle
 
-    private var exeTimeStat = DescriptiveStatistics().apply{ windowSize = 100 }
-
-    private val queueTimeStat = DescriptiveStatistics().apply{ windowSize = 100 }
-
-    private val slowDownStat = DescriptiveStatistics().apply{ windowSize = 100 }
+    private var instanceStats = MSInstanceStats(getMSId(), getId())
 
     private val sharePolicy = false
 
@@ -104,15 +100,15 @@ public class MSInstance(private val ms: Microservice,
      * load is exe time.
      * includes left over currently running load time
      */
-    public fun totalLoad(): Int {
+    public fun totalLoad(): Long {
 
-        var load = 0
+        var load: Long = 0
 
         val currentTime = clock.millis()
 
         // check for remaining running load
 
-        if(runningLoadEndTime > currentTime) load = (runningLoadEndTime - currentTime).toInt()
+        if(runningLoadEndTime > currentTime) load = (runningLoadEndTime - currentTime)
 
         // queued load
 
@@ -160,7 +156,7 @@ public class MSInstance(private val ms: Microservice,
 
     public fun getStats(): MSInstanceStats {
 
-        return MSInstanceStats(getId(), exeTimeStat, queueTimeStat, slowDownStat)
+        return instanceStats
 
     }
 
@@ -359,19 +355,22 @@ public class MSInstance(private val ms: Microservice,
 
         // record execution time
 
-        exeTimeStat.addValue(exeTime.toDouble())
+        instanceStats.saveExeTime(exeTime)
 
         logger.debug{" ${clock.millis()} Queuing Invoke request for instance "+ getId() +" with exeTime $exeTime"}
 
-        val waitTime = totalLoad().toDouble()
+        val waitTime = totalLoad()
 
         // record wait time
 
-        queueTimeStat.addValue(waitTime)
+        instanceStats.saveWaitTime(waitTime)
+
+        // record total time
+        instanceStats.saveTotalTime(waitTime+exeTime)
 
         // record slowdown
 
-        slowDownStat.addValue( ( (waitTime+exeTime)/exeTime) )
+        instanceStats.saveSlowDown( ( (waitTime+exeTime)/exeTime) )
 
         return suspendCancellableCoroutine { cont ->
             msReq.setCont(cont)
