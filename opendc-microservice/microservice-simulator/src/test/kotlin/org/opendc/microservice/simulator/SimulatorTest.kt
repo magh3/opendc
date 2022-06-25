@@ -54,20 +54,9 @@ internal class SimulatorTest {
     @Test
     fun runMiniSim() = runBlockingSimulation {
 
-        // val msConfig = MSConfigGenerator().generate(4,200)
+        // experiment 1 setup ms config: 4,listOf(4,1,1,2)
 
-        val msConfig = mutableListOf<MSConfiguration>(
-
-            MSConfiguration(UUID.randomUUID(),
-                listOf(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID())),
-
-            MSConfiguration(UUID.randomUUID(),
-                listOf(UUID.randomUUID())),
-
-            MSConfiguration(UUID.randomUUID(), listOf(UUID.randomUUID())) ,
-
-            MSConfiguration(UUID.randomUUID(),
-                listOf(UUID.randomUUID(), UUID.randomUUID())) )
+        val msConfig = MSConfigGenerator().generateV2(4,listOf(4,1,1,2))
 
         val workload = spyk(object : MSWorkload, SimWorkload by SimFlopsWorkload(1000) {
             override suspend fun invoke() {

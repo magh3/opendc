@@ -23,4 +23,8 @@ public class MSConfiguration(private val id: UUID,
 
     }
 
+    override fun toString(): String {
+        return "MS Config - ms: ${getId()} with instances ${getInstanceIds()} \n"
+    }
+
 }
