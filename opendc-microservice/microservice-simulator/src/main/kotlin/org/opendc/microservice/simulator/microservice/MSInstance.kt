@@ -384,10 +384,9 @@ public class MSInstance(private val ms: Microservice,
 
     /**
      * stop instance, close / remove.
+     * called by registry manager when deregister called
      */
     public suspend fun close(){
-
-        // registryManager.deregisterInstance(this)
 
         job?.cancel()
 

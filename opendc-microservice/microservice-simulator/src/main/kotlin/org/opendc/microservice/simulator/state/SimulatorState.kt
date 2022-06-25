@@ -236,7 +236,7 @@ public class SimulatorState
 
         allJobs.joinAll()
 
-        stop(registryManager.getInstances())
+        stop(registryManager)
 
         logger.info {"END TIME ${clock.millis()}"}
 
@@ -262,7 +262,7 @@ public class SimulatorState
     /**
      * each call to this function is considered as one request.
      * parameter can have duplicate microservices.
-     * Not used for routerMapping as routerMapping require different setting.
+     * Not used for communication as communication require different setting.
      */
     public suspend fun invokeMicroservices(request: RouterRequest, corScope: CoroutineScope){
 
@@ -349,11 +349,13 @@ public class SimulatorState
     }
 
 
-    public suspend fun stop(instances: Set<MSInstance>){
+    public suspend fun stop(registryManager: RegistryManager){
 
         // stop instances
 
-        instances.map{it.close()}
+        val instances = registryManager.getInstances().toList()
+
+        instances.map{registryManager.deregisterInstance(it)}
 
         // stop router
 

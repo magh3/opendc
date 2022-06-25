@@ -18,7 +18,9 @@ public class RegistryManager(){
     }
 
 
-    public fun deregisterInstance(msInstance: MSInstance){
+    public suspend fun deregisterInstance(msInstance: MSInstance){
+
+        msInstance.close()
 
         registry.remove(msInstance)
 
