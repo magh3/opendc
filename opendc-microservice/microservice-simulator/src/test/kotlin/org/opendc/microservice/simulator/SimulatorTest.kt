@@ -20,6 +20,7 @@ import org.opendc.microservice.simulator.router.PoissonDelay
 import org.opendc.microservice.simulator.loadBalancer.*
 import org.opendc.microservice.simulator.microservice.MSInstance
 import org.opendc.microservice.simulator.microservice.MSConfigGenerator
+import org.opendc.microservice.simulator.router.ProbDepthPolicy
 import org.opendc.microservice.simulator.router.RouterRequestGeneratorImpl
 import org.opendc.microservice.simulator.state.SimulatorState
 import org.opendc.microservice.simulator.trace.MSTraceReader
@@ -66,10 +67,14 @@ internal class SimulatorTest {
             }
         }
 
+        val requestGenerator = RouterRequestGeneratorImpl(
+            ProbRouting(listOf(0.62,0.18,0.08,0.12),1),
+            LogNormalExe(-4.13, 3.48),
+            ProbDepthPolicy(mapOf(0 to 0.5, 2 to 0.5))
+        )
+
         val state = SimulatorState(msConfig,
-            RouterRequestGeneratorImpl(ProbRouting(listOf(0.62,0.18,0.08,0.12),1),
-                LogNormalExe(-4.13, 3.48), 4000, clock,
-                4),
+            requestGenerator,
             RoundRobinLoadBalancer(), FirstComeFirstServe(), FullRequestExe(),
             clock, this, machineModel,
             mapper, (100000).toLong(), PoissonDelay(1066.0)

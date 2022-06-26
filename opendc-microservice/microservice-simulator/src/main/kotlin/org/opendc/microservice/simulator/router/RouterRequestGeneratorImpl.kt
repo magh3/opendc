@@ -8,14 +8,9 @@ import java.time.Clock
 
 public class RouterRequestGeneratorImpl(private val routingPolicy: RoutingPolicy,
                                         private val exePolicy: ExeDelay,
-                                        private val sla: Int,
-                                        private val clock: Clock,
-                                        private val depth: Int = 1): RouterRequestGenerator {
+                                        private val depthPolicy: DepthPolicy): RouterRequestGenerator {
 
     private val logger = KotlinLogging.logger {}
-
-    private val depthPolicy = ProbDepthPolicy(mapOf(0 to 0.5, 2 to 0.5))
-
 
     /**
      * only make the request, not add meta
