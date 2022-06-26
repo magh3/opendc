@@ -1,4 +1,4 @@
-package org.opendc.microservice.simulator.execution
+package org.opendc.microservice.simulator.execution.order
 
 import mu.KotlinLogging
 import org.opendc.microservice.simulator.microservice.MSInstance
@@ -7,7 +7,7 @@ import org.opendc.microservice.simulator.router.RouterRequest
 import java.time.Clock
 import java.util.*
 
-public open class EarliestDeadlineNoExe: QueuePolicy {
+public open class EarliestDeadline: QueuePolicy {
 
     private val logger = KotlinLogging.logger {}
 

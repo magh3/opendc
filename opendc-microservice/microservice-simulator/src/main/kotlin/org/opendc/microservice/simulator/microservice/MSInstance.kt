@@ -4,6 +4,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import mu.KotlinLogging
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics
+import org.opendc.microservice.simulator.execution.RequestExecution
 import org.opendc.microservice.simulator.router.MSRequest
 import org.opendc.microservice.simulator.router.RouterRequest
 import org.opendc.microservice.simulator.state.RegistryManager
@@ -66,9 +67,7 @@ public class MSInstance(private val ms: Microservice,
 
     private var instanceStats = MSInstanceStats(getMSId(), getId())
 
-    private val sharePolicy = false
-
-    private val shareDelay: Long = 500
+    private val reqExecution: RequestExecution = simState.getReqExe()
 
     /**
      * The logger instance of this instance.
@@ -189,7 +188,7 @@ public class MSInstance(private val ms: Microservice,
 
                     // queue.map{println(it.msReq.getMeta()["stageDeadline"])}
 
-                    // queue.map{println(it.msReq.getExeTime())}
+                    queue.map{println(it.msReq.getExeTime())}
 
                     val queueEntry = queue.poll()
 
@@ -198,7 +197,7 @@ public class MSInstance(private val ms: Microservice,
 
                     // println("queue size ${queue.size +1}, choosed req with deadline ${queueEntry.msReq.getMeta()["stageDeadline"]}" )
 
-                    var exeTime = queueEntry.msReq.getExeTime()
+                    val exeTime = queueEntry.msReq.getExeTime()
 
                     runningLoadEndTime = clock.millis() + exeTime
 
@@ -207,42 +206,11 @@ public class MSInstance(private val ms: Microservice,
 
                     workload.invoke()
 
-                    if(sharePolicy) {
+                    val exeFinished = reqExecution.execute(queueEntry)
 
-                        // set meta if first time
+                    if(exeFinished) {
 
-                        if(queueEntry.msReq.getMeta()["exeLeft"] == null) queueEntry.msReq.setMeta("exeLeft", exeTime)
-
-                        exeTime = queueEntry.msReq.getMeta()["exeLeft"] as Long
-
-                    }
-
-                    if(sharePolicy && exeTime > shareDelay) {
-
-                        // request does not finish
-
-                        delay(shareDelay)
-
-                        // update leftover exe time
-
-                        val exeLeft = exeTime - shareDelay
-
-                        queueEntry.msReq.setMeta("exeLeft", exeLeft)
-
-                        // put at end of queue
-
-                        queue.add(queueEntry)
-
-                        // chan.trySend(Unit)
-
-                    }
-                    else {
-
-                        // request will finish
-
-                        delay(exeTime)
-
-                        // if request completes
+                        // request completes
 
                         allJobs.add(launch {
 
@@ -250,7 +218,14 @@ public class MSInstance(private val ms: Microservice,
 
                         })
 
-                        logger.debug { " ${clock.millis()} Finished invoke at coroutine ${Thread.currentThread().name} on instance ${getId()}"}
+                        logger.debug { " ${clock.millis()} Finished invoke at coroutine ${Thread.currentThread().name} on instance ${getId()}" }
+
+                    }
+                    else{
+
+                        // if request not finished put back to queue
+
+                        queue.add(queueEntry)
 
                     }
 

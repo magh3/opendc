@@ -1,10 +1,10 @@
-package org.opendc.microservice.simulator.execution
+package org.opendc.microservice.simulator.execution.order
 
 import mu.KotlinLogging
 import org.opendc.microservice.simulator.router.RouterRequest
 import java.time.Clock
 
-public class EqualDivisionSlack: EarliestDeadlineNoExe() {
+public class EqualDivisionSlack: EarliestDeadline() {
 
     private val logger = KotlinLogging.logger {}
 

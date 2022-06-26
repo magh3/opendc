@@ -3,10 +3,10 @@ package org.opendc.microservice.simulator.state
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import mu.KotlinLogging
-import org.opendc.microservice.simulator.execution.QueuePolicy
+import org.opendc.microservice.simulator.execution.RequestExecution
+import org.opendc.microservice.simulator.execution.order.QueuePolicy
 import org.opendc.microservice.simulator.loadBalancer.LoadBalancer
 import org.opendc.microservice.simulator.microservice.MSConfiguration
-import org.opendc.microservice.simulator.microservice.MSInstance
 import org.opendc.microservice.simulator.microservice.MSInstanceDeployer
 import org.opendc.microservice.simulator.microservice.Microservice
 import org.opendc.microservice.simulator.router.*
@@ -25,6 +25,7 @@ public class SimulatorState
      private val requestGenerator: RouterRequestGenerator,
      private val loadBalancer: LoadBalancer,
      private val queuePolicy: QueuePolicy,
+     private val reqExecution: RequestExecution,
      private val clock: Clock,
      private val scope: CoroutineScope,
      private val model: MachineModel,
@@ -328,6 +329,13 @@ public class SimulatorState
     public fun getQueuePolicy(): QueuePolicy {
 
         return queuePolicy
+
+    }
+
+
+    public fun getReqExe(): RequestExecution{
+
+        return reqExecution
 
     }
 
