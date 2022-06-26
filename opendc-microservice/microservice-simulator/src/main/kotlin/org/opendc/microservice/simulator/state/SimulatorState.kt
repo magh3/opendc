@@ -5,6 +5,7 @@ import kotlinx.coroutines.channels.Channel
 import mu.KotlinLogging
 import org.opendc.microservice.simulator.execution.RequestExecution
 import org.opendc.microservice.simulator.execution.order.QueuePolicy
+import org.opendc.microservice.simulator.loadBalancer.GreedyLoadBalancer
 import org.opendc.microservice.simulator.loadBalancer.LoadBalancer
 import org.opendc.microservice.simulator.microservice.MSConfiguration
 import org.opendc.microservice.simulator.microservice.MSInstanceDeployer

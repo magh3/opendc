@@ -218,6 +218,26 @@ public class MSInstance(private val ms: Microservice,
 
                         })
 
+                        val msReq = queueEntry.msReq
+
+                        // record execution time
+
+                        instanceStats.saveExeTime(msReq.getExeTime())
+
+                        val waitTime = clock.millis() - msReq.getArrivalTime()
+
+                        // record wait time
+
+                        instanceStats.saveWaitTime(waitTime)
+
+                        // record total time
+
+                        instanceStats.saveTotalTime(waitTime+exeTime)
+
+                        // record slowdown
+
+                        instanceStats.saveSlowDown( ( (waitTime+exeTime)/exeTime) )
+
                         logger.debug { " ${clock.millis()} Finished invoke at coroutine ${Thread.currentThread().name} on instance ${getId()}" }
 
                     }
@@ -326,28 +346,11 @@ public class MSInstance(private val ms: Microservice,
      */
     public suspend fun invoke(msReq: MSRequest ,request: RouterRequest): Int{
 
-        val exeTime = msReq.getExeTime()
-
-        // record execution time
-
-        instanceStats.saveExeTime(exeTime)
-
-        logger.debug{" ${clock.millis()} Queuing Invoke request for instance "+ getId() +" with exeTime $exeTime"}
-
-        val waitTime = totalLoad()
-
-        // record wait time
-
-        instanceStats.saveWaitTime(waitTime)
-
-        // record total time
-        instanceStats.saveTotalTime(waitTime+exeTime)
-
-        // record slowdown
-
-        instanceStats.saveSlowDown( ( (waitTime+exeTime)/exeTime) )
+        logger.debug{" ${clock.millis()} Queuing Invoke request for instance "+ getId() +
+            " with exeTime ${msReq.getExeTime()}"}
 
         return suspendCancellableCoroutine { cont ->
+            msReq.setArrivalTime(clock.millis())
             msReq.setCont(cont)
             queue.add(InvocationRequest(msReq, request))
             chan.trySend(Unit)

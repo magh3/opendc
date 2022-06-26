@@ -7,6 +7,8 @@ public class MSRequest(private val ms: Microservice,
                 private val exeTime: Long,
                 private val meta: MutableMap<String, Any>){
 
+    private var arrivalTime: Long = 0
+
     private lateinit var cont: Continuation<Int>
 
 
@@ -35,10 +37,23 @@ public class MSRequest(private val ms: Microservice,
 
     }
 
+    public fun getArrivalTime(): Long {
+
+        return arrivalTime
+
+    }
+
 
     public fun setCont(continuation: Continuation<Int>){
 
         cont = continuation
+
+    }
+
+
+    public fun setArrivalTime(value: Long){
+
+        arrivalTime = value
 
     }
 
