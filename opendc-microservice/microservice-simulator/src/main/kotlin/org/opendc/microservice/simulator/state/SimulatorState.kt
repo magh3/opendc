@@ -31,7 +31,8 @@ public class SimulatorState
      private val model: MachineModel,
      private val mapper: MSWorkloadMapper,
      private val lastReqTime: Long,
-     private val interArrivalDelay: InterArrivalDelay
+     private val interArrivalDelay: InterArrivalDelay,
+     private val sla: Int
 ) {
 
     private val deployer =  MSInstanceDeployer()
@@ -62,10 +63,6 @@ public class SimulatorState
     private val individualExeTimeStats = mutableListOf<Long>()
 
     private val requestsCompletedHourly = mutableListOf<Long>()
-
-    private var slaVoilations = 0
-
-    private val sla = 4000
 
     init{
 
@@ -245,8 +242,6 @@ public class SimulatorState
 
         logger.info {"$routerStats" }
 
-        logger.info{"Total sla voilations = $slaVoilations \n"}
-
         logger.info{"Individual ms exe times: $individualExeTimeStats \n"}
 
         logger.info { "Hourly Utilization: \n" }
@@ -307,7 +302,7 @@ public class SimulatorState
 
         val totalTime = endTime - startTime
 
-        if(totalTime > sla) slaVoilations += 1
+        if(totalTime > sla) routerStats.addSlaViolation()
 
         val waitTime = totalTime - msExeTime
 
