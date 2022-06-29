@@ -77,7 +77,7 @@ internal class SimulatorTest {
             requestGenerator,
             RoundRobinLoadBalancer(), FirstComeFirstServe(), FullRequestExe(),
             clock, this, machineModel,
-            mapper, (100000).toLong(), PoissonDelay(1066.0), 4000
+            mapper, (1000*3600*24).toLong(), PoissonDelay(1066.0), 4000
         )
 
         state.run()

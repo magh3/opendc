@@ -188,7 +188,7 @@ public class MSInstance(private val ms: Microservice,
 
                     // queue.map{println(it.msReq.getMeta()["stageDeadline"])}
 
-                    queue.map{println(it.msReq.getExeTime())}
+                    // queue.map{println(it.msReq.getExeTime())}
 
                     val queueEntry = queue.poll()
 
