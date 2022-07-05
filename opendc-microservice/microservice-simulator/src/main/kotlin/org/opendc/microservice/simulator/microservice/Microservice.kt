@@ -9,7 +9,7 @@ import java.util.*
 public class Microservice(private val id: UUID, private val registryManager: RegistryManager,
                           private val clock: Clock, private val simDuration: Long){
 
-    private var exeTimeStat: Long = 0
+    private var utilizationExeTime: Long = 0
 
     private val utilization = DescriptiveStatistics()// .apply{ windowSize = 100 }
 
@@ -23,7 +23,7 @@ public class Microservice(private val id: UUID, private val registryManager: Reg
 
     public fun saveExeTime(exeTime: Long){
 
-        exeTimeStat += exeTime
+        utilizationExeTime += exeTime
 
     }
 
@@ -32,22 +32,14 @@ public class Microservice(private val id: UUID, private val registryManager: Reg
 
         val nrOfInstances = registryManager.getInstances(this).size
 
-        utilization.addValue(exeTimeStat.toDouble()/(nrOfInstances * 1 * 3600 * 1000))
+        utilization.addValue(utilizationExeTime.toDouble()/(nrOfInstances * 1 * 3600 * 1000))
 
-        exeTimeStat = 0
+        utilizationExeTime = 0
 
     }
 
 
     public fun getUtilization(): DoubleArray {
-
-        // val nrOfInstances = registryManager.getInstances(this).size
-
-        // logger.debug { "MS: ${getId()} has $nrOfInstances instances" }
-
-        // println("${getId()} total exe time is $exeTimeStat")
-
-        // return exeTimeStat.toDouble()/ (nrOfInstances * simDuration)
 
         return utilization.values
 
