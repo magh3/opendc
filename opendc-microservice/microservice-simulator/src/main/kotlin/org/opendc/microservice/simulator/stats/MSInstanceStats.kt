@@ -9,6 +9,7 @@ public class MSInstanceStats(private val msId: UUID, private val instanceId: UUI
     private val waitTimeStats: MutableList<Long> = mutableListOf()
     private val totalTimeStats: MutableList<Long> = mutableListOf()
     private val slowDownStats: MutableList<Long> = mutableListOf()
+    private val utilization: MutableList<Double> = mutableListOf()
 
     public fun saveExeTime(value: Long){
 
@@ -34,13 +35,20 @@ public class MSInstanceStats(private val msId: UUID, private val instanceId: UUI
 
     }
 
+    public fun saveUtilization(value: Double){
+
+        utilization.add(value)
+
+    }
+
     override fun toString(): String {
 
         return "Stats for microservice $msId Instance $instanceId are: \n" +
             "Execution times (${exeTimeStats.size}) : $exeTimeStats\n" +
             "Wait times (${waitTimeStats.size}): $waitTimeStats \n" +
             "Total times (${totalTimeStats.size}): $totalTimeStats. \n" +
-            "Slow down (${slowDownStats.size}): $slowDownStats \n\n"
+            "Slow down (${slowDownStats.size}): $slowDownStats \n" +
+            "Utilization at configured intervals: $utilization \n\n"
 
     }
 

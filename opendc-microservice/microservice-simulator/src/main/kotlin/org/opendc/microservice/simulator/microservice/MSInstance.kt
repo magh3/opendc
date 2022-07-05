@@ -74,6 +74,10 @@ public class MSInstance(private val ms: Microservice,
      */
     private val logger = KotlinLogging.logger {}
 
+    private var timeLoad: Long = 0
+
+    private val utilizationRecordDelay: Long = 1000*60*5
+
     init{
 
         registryManager.registerInstance(this)
@@ -160,6 +164,15 @@ public class MSInstance(private val ms: Microservice,
     }
 
 
+    private fun saveUtilization(){
+
+        instanceStats.saveUtilization(timeLoad/utilizationRecordDelay.toDouble())
+
+        timeLoad = 0
+
+    }
+
+
     public fun run(){
 
         job = scope.launch {
@@ -167,6 +180,20 @@ public class MSInstance(private val ms: Microservice,
             launch{
 
                 machine.startWorkload(workload)
+
+            }
+
+            launch{
+
+                // interval metric recorder
+
+                while (isActive) {
+
+                    saveUtilization()
+
+                    delay(utilizationRecordDelay)
+
+                }
 
             }
 
@@ -348,6 +375,8 @@ public class MSInstance(private val ms: Microservice,
 
         logger.debug{" ${clock.millis()} Queuing Invoke request for instance "+ getId() +
             " with exeTime ${msReq.getExeTime()}"}
+
+        timeLoad += msReq.getExeTime()
 
         return suspendCancellableCoroutine { cont ->
             msReq.setArrivalTime(clock.millis())
