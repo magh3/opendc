@@ -172,29 +172,29 @@ public class SimulatorState
 
         var count: Long = 0
 
-        val oneHr = 1*3600*1000
+        val oneHr: Long = 1*3600*1000
 
-        var utilizationCheckTime = oneHr
+        val metricListener: Job
+
+        metricListener = scope.launch{
+
+            while(isActive){
+
+                delay(oneHr)
+
+                logger.info{"${clock.millis()} recording metrics"}
+
+                registryManager.getMicroservices().map{it.setUtilization()}
+
+                requestsCompletedHourly.add(count - requestsCompletedHourly.sum())
+
+            }
+
+        }
 
         // time loop
 
             while (clock.millis() < lastReqTime) {
-
-                if(clock.millis() > utilizationCheckTime){
-
-                    println("${clock.millis()} setting utilization")
-
-                    // add utilization
-
-                    registryManager.getMicroservices().map{it.setUtilization()}
-
-                    requestsCompletedHourly.add(count - requestsCompletedHourly.sum())
-
-                    // update timer
-
-                    utilizationCheckTime += oneHr
-
-                }
 
                 count += 1
 
@@ -227,13 +227,15 @@ public class SimulatorState
 
         }
 
-        registryManager.getMicroservices().map{it.setUtilization()}
+        // registryManager.getMicroservices().map{it.setUtilization()}
 
-        requestsCompletedHourly.add(count - requestsCompletedHourly.sum())
+        // requestsCompletedHourly.add(count - requestsCompletedHourly.sum())
 
         logger.info {"All requests sent waiting for join"}
 
         allJobs.joinAll()
+
+        metricListener.cancelAndJoin()
 
         logger.info {"END TIME ${clock.millis()} \n"}
 
