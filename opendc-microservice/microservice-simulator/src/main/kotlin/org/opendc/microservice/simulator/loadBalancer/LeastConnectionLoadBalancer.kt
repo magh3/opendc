@@ -10,42 +10,25 @@ import java.util.*
 public class LeastConnectionLoadBalancer: LoadBalancer {
 
     override fun instance(ms: Microservice, registry: Set<MSInstance>): MSInstance {
-
         val msInstances = filterMSInstances(ms, registry)
-
         // get load for instances of the specific ms
-
         val instanceConnectionsMap = getConnections(msInstances)
-
         // find min instance load entry
-
         var min: Map.Entry<UUID, Int> = instanceConnectionsMap.iterator().next();
-
         for (entry in instanceConnectionsMap) {
-
             if ( min.value > entry.value) {
-
                 min = entry
-
             }
         }
-
         return instanceFromId(min.key, registry)
-
     }
 
 
     private fun getConnections(msInstances: MutableSet<MSInstance>): MutableMap<UUID, Int> {
-
         val instanceConnectionsMap: MutableMap<UUID, Int> = mutableMapOf()
-
         for(instance in msInstances){
-
             instanceConnectionsMap[instance.getId()] = instance.activeConnections()
-
         }
-
         return instanceConnectionsMap
-
     }
 }
