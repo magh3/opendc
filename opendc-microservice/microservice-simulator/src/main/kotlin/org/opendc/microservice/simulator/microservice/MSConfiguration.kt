@@ -7,20 +7,14 @@ import java.util.*
  */
 public class MSConfiguration(private val id: UUID,
                              private val instanceIds: List<UUID>,
-
                              ){
 
     public fun getId(): UUID {
-
         return id
-
     }
 
-
     public fun getInstanceIds(): List<UUID> {
-
         return instanceIds
-
     }
 
     override fun toString(): String {

@@ -5,7 +5,6 @@ import kotlinx.coroutines.channels.Channel
 import mu.KotlinLogging
 import org.opendc.microservice.simulator.execution.RequestExecution
 import org.opendc.microservice.simulator.execution.order.QueuePolicy
-import org.opendc.microservice.simulator.loadBalancer.GreedyLoadBalancer
 import org.opendc.microservice.simulator.loadBalancer.LoadBalancer
 import org.opendc.microservice.simulator.microservice.MSConfiguration
 import org.opendc.microservice.simulator.microservice.MSInstanceDeployer
@@ -70,7 +69,7 @@ public class SimulatorState
 
         for(config in msConfigs){
             // make ms
-            ms = Microservice((config.getId()), registryManager, clock, lastReqTime)
+            ms = Microservice((config.getId()), registryManager)
             registryManager.addMs(ms)
             // deploy instances
             for(instanceId in config.getInstanceIds()){
