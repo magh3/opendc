@@ -14,9 +14,7 @@ public class PoissonDelay(rate: Double): InterArrivalDelay {
 
 
     override fun time(): Long {
-
         return this.dist.sample().toLong()
-
     }
 
 

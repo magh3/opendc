@@ -14,7 +14,7 @@ public interface LoadBalancer {
             if(instance.getId() == id) return instance
         }
 
-        require(true){"ERROR. No instance match with given id. returning random first instance"}
+        require(false){"ERROR. No instance match with given id. returning random first instance"}
         return instances.elementAt(0)
     }
 

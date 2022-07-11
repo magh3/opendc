@@ -26,7 +26,6 @@ public class RoundRobinLoadBalancer: LoadBalancer {
         return msInstances.remove()
     }
 
-
     private fun updateNewInstances(registry: Set<MSInstance>){
         var queueInstances: Queue<UUID>
         var msId: UUID
@@ -47,7 +46,6 @@ public class RoundRobinLoadBalancer: LoadBalancer {
             }
         }
     }
-
 
     private fun updateDeletedInstances(registry: Set<MSInstance>){
         val registryInstanceIds : MutableList<UUID> = mutableListOf()
