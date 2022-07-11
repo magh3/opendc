@@ -8,14 +8,9 @@ import java.util.*
 public class FirstComeFirstServe(): QueuePolicy {
 
     override fun getEntry(queue: Queue<MSInstance.InvocationRequest>): Queue<MSInstance.InvocationRequest> {
-
         return queue
-
     }
 
-    override fun setMeta(request: RouterRequest, sla: Int, clock: Clock) {
-
-    }
-
+    override fun setMeta(request: RouterRequest, sla: Int, clock: Clock) {}
 
 }

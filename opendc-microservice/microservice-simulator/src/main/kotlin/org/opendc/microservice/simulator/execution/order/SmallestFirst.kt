@@ -9,20 +9,12 @@ import kotlin.Comparator
 public class SmallestFirst: QueuePolicy {
 
     override fun getEntry(queue: Queue<MSInstance.InvocationRequest>): Queue<MSInstance.InvocationRequest> {
-
         var entryList = queue.toMutableList()
-
         entryList = entryList.sortedWith(deadineCompare) as MutableList<MSInstance.InvocationRequest>
-
-        // entryList.map{println(it.msReq.getExeTime())}
-
         return ArrayDeque<MSInstance.InvocationRequest>(entryList)
-
     }
 
-    override fun setMeta(request: RouterRequest, sla: Int, clock: Clock) {
-
-    }
+    override fun setMeta(request: RouterRequest, sla: Int, clock: Clock) {}
 
     private val deadineCompare =  Comparator<MSInstance.InvocationRequest> { a, b ->
         when {
